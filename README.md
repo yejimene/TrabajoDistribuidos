@@ -1,1 +1,1 @@
-# TrabajoDistribuidos
+# Reserva de Asientos Cine
