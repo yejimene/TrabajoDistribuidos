@@ -43,7 +43,7 @@ public class Procesar implements Runnable {
 
     public synchronized boolean estaDisponible(List<String> in) {
         for(String id: in) {
-            if(ButacasCompradas.contains(in)) {
+            if(ButacasCompradas.contains(id)) {
                 return false;
             }
         }
