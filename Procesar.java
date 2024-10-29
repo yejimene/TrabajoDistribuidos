@@ -21,7 +21,7 @@ public class Procesar implements Runnable {
         this.s= s;
     }
     public void run() {
-        try(BufferedReader in =new BufferedReader(new InputStreamReader(s.getInputStream())) ;
+        try(BufferedReader in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8")) ;
             DataOutputStream out= new DataOutputStream(s.getOutputStream())){
             String id;
             clave= in.readLine();
@@ -61,7 +61,7 @@ public class Procesar implements Runnable {
         return true;
     }
     public void enviarAsientosOcupados(String clave) {
-        try(BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))){
+        try(BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"))){
             if(Cine.get(clave).size()==0) {
                 out.write("NADA"+"\n");
             }
