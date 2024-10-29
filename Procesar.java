@@ -62,6 +62,9 @@ public class Procesar implements Runnable {
     }
     public void enviarAsientosOcupados(String clave) {
         try(BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))){
+            if(Cine.get(clave).size()==0) {
+                out.write("NADA"+"\n");
+            }
             for(String s : Cine.get(clave)) {
                 out.write(s+"\n");
             }
