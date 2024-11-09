@@ -22,17 +22,23 @@ public class Procesar implements Runnable {
     }
     public void run() {
         try(BufferedReader in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8")) ;
-            DataOutputStream out= new DataOutputStream(s.getOutputStream())){
+            BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"))){
             String id;
             clave= in.readLine();
-            enviarAsientosOcupados(clave);
-            while(!(id=in.readLine()).equals("ACABADO")) {
+            System.out.println(clave);
+            enviarAsientosOcupados(clave,out);
+            while((id = in.readLine()) != null &&!id.equals("ACABADO")) {
+                System.out.println(id);
                 lista.add(id);
             }
-            if(comprar(lista)) {
-                out.writeBoolean(true);
+            if(comprar(lista)){
+                System.out.println("true");
+                out.write("true\n");
+                out.flush();
             }else {
-                out.writeBoolean(false);
+                System.out.println("false");
+                out.write("false\n");
+                out.flush();
             }
         }catch(IOException e){
             e.printStackTrace();
@@ -60,15 +66,19 @@ public class Procesar implements Runnable {
         }
         return true;
     }
-    public void enviarAsientosOcupados(String clave) {
-        try(BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"))){
-            if(Cine.get(clave).size()==0) {
+    public void enviarAsientosOcupados(String clave,BufferedWriter out) {
+        try {
+            Cine.putIfAbsent(clave, new Vector<String>());
+            if(Cine.get(clave).isEmpty()) {
                 out.write("NADA"+"\n");
+                out.flush();
+            }else {
+                for(String s : Cine.get(clave)) {
+                    out.write(s+"\n");
+                }
+                out.write("FIN\n");
+                out.flush();
             }
-            for(String s : Cine.get(clave)) {
-                out.write(s+"\n");
-            }
-            out.flush();
         }catch(IOException e) {
             e.printStackTrace();
         }

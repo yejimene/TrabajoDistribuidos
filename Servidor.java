@@ -12,7 +12,7 @@ public class Servidor {
             while(true) {
                 try{
                     hilo.execute(new Procesar(s.accept()));
-                }catch(RejectedExecutionException | NullPointerException e) {
+                }catch(IOException e) {
                     e.printStackTrace();
                 }
             }
