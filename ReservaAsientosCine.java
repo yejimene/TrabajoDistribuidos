@@ -26,6 +26,8 @@ public class ReservaAsientosCine {
     private final ImageIcon asientoOcupado = redimensionarIcono(new ImageIcon("ocupado.png"), 30, 30);
     private final ImageIcon asientoSeleccionado = redimensionarIcono(new ImageIcon("seleccionado.png"), 30, 30);
     private ArrayList<JButton> reservados= new ArrayList<>();
+    private JButton btnConfirmarAsientos;
+    private boolean PuedeComprar=true;
 
     public ReservaAsientosCine() {
         principal.setTitle("Reserva Asientos Cine ");
@@ -125,11 +127,50 @@ public class ReservaAsientosCine {
             if(Integer.parseInt(numAsientosReserva)>((Filas*Columnas))-n) {
                 JOptionPane.showMessageDialog(Sala, "Superas el numero de entradas disponibles");
             }
+            //boton para regresar a la pantalla anterior
+            JButton btnCerrar = new JButton("Regresar");
+            btnCerrar.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    liberarRecursos();
+                    Sala.dispose();
+                    principal.setVisible(true);
 
+                } });
+
+            // boton de confirmar asientos (siempre visible, pero habilitado dependiendo de los asientos seleccionados)
+            btnConfirmarAsientos = new JButton("Comprar");
+            btnConfirmarAsientos.setEnabled(false);
+            btnConfirmarAsientos.addMouseListener(new MouseAdapter() {
+                @Override
+                public void  mouseClicked(MouseEvent e) {
+                    boolean compraExitosa = comprar(in,out);
+                    int total = calcularCoste();
+                    String mensaje;
+                    if(compraExitosa){
+                        mensaje="Compra realizada con éxito. Costo total: $" + total;
+                    }else{
+                        mensaje="Error: Algunos asientos ya están reservados";
+                    }
+                    JOptionPane.showMessageDialog(Sala, mensaje);
+                    if(compraExitosa) {
+                        for (JButton asiento : reservados) {
+                            asiento.setIcon(asientoOcupado);
+                        }
+                        reservados.clear();
+                        btnConfirmarAsientos.setEnabled(false);
+                        PuedeComprar=false;
+                    }
+                }
+            });
+            JPanel panelBotones = new JPanel();
+            panelBotones.add(btnCerrar);
+            panelBotones.add(btnConfirmarAsientos);
 
             JPanel panelPrincipal = new JPanel(new BorderLayout());
             panelPrincipal.add(panelPantalla, BorderLayout.NORTH);
             panelPrincipal.add(panelAsientos, BorderLayout.CENTER);
+            panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
             Sala.add(panelPrincipal);
             Sala.setVisible(true);
             principal.setVisible(false);
@@ -165,6 +206,17 @@ public class ReservaAsientosCine {
             e.printStackTrace();
         }
         return numero;
+    }
+    private void liberarRecursos() {
+        reservados.clear();
+        PuedeComprar=true;
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (socket != null) socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
