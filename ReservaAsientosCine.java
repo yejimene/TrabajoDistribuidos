@@ -1,14 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
-
-
 
 public class ReservaAsientosCine {
     private JFrame principal= new JFrame();
@@ -22,6 +17,7 @@ public class ReservaAsientosCine {
     private JButton[][] asientos;
     private final int Filas= 5;
     private final int Columnas = 8;
+    private final int precio_asiento = 10;
     private final ImageIcon asientoDisponible = redimensionarIcono(new ImageIcon("libre.png"), 30, 30);
     private final ImageIcon asientoOcupado = redimensionarIcono(new ImageIcon("ocupado.png"), 30, 30);
     private final ImageIcon asientoSeleccionado = redimensionarIcono(new ImageIcon("seleccionado.png"), 30, 30);
@@ -48,15 +44,20 @@ public class ReservaAsientosCine {
         String[] cantidadAsientos = {"1", "2", "3","10"};
         comboAsientos= new JComboBox<>(cantidadAsientos);
         JButton btnConfirmarSeleccion = new JButton("Confirmar");
-        JLabel precioAsiento= new JLabel();
-        precioAsiento.setText("Cada butaca vale 10$");
         btnConfirmarSeleccion.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 mostrarSala();
             }
         });
-
+        JLabel precioTotal = new JLabel("Precio total: €0");
+        comboAsientos.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int cantidad = Integer.parseInt((String) comboAsientos.getSelectedItem());
+                precioTotal.setText("Precio total: €" + (cantidad * precio_asiento));
+            }
+        });
         // Componentes de seleccion
         panelSeleccion.add(labelPelicula);
         panelSeleccion.add(comboPeliculas);
@@ -64,7 +65,7 @@ public class ReservaAsientosCine {
         panelSeleccion.add(comboHoras);
         panelSeleccion.add(labelAsientos);
         panelSeleccion.add(comboAsientos);
-        panelSeleccion.add(precioAsiento);
+        panelSeleccion.add(precioTotal);
         panelSeleccion.add(btnConfirmarSeleccion);
 
         principal.add(panelSeleccion);
@@ -77,8 +78,14 @@ public class ReservaAsientosCine {
         String clave = pelicula + "_" + hora;
         JFrame Sala = new JFrame("Sala de Cine - Selección de Asientos");
         Sala.setSize(800, 600);
-        Sala.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Sala.setLocationRelativeTo(null);
+        Sala. addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                liberarRecursos();
+                principal.setVisible(true);
+            }
+        });
 
         try {
             socket = new Socket("localhost", 55555);
@@ -108,7 +115,7 @@ public class ReservaAsientosCine {
                                 boton.setIcon(asientoDisponible);
                                 reservados.remove(boton);
                             }
-
+                            gestionarBotonCompra();
                         }
                     });
                     PanelCentral.add(asientos[i][j]);
@@ -144,22 +151,25 @@ public class ReservaAsientosCine {
             btnConfirmarAsientos.addMouseListener(new MouseAdapter() {
                 @Override
                 public void  mouseClicked(MouseEvent e) {
-                    boolean compraExitosa = comprar(in,out);
                     int total = calcularCoste();
-                    String mensaje;
-                    if(compraExitosa){
-                        mensaje="Compra realizada con éxito. Costo total: $" + total;
-                    }else{
-                        mensaje="Error: Algunos asientos ya están reservados";
-                    }
-                    JOptionPane.showMessageDialog(Sala, mensaje);
-                    if(compraExitosa) {
-                        for (JButton asiento : reservados) {
-                            asiento.setIcon(asientoOcupado);
+                    int num =  JOptionPane.showConfirmDialog(Sala, "Confirmar la compra. Coste Total: €" + total, "Confirmacion", JOptionPane.YES_NO_OPTION);
+                    if (num == JOptionPane.YES_OPTION) {
+                        boolean compraExitosa = comprar(in, out);
+                        String mensaje;
+                        if (compraExitosa) {
+                            mensaje = "Compra realizada con éxito. Coste total: €" + total;
+                            for (JButton asiento : reservados) {
+                                asiento.setIcon(asientoOcupado);
+                            }
+                            reservados.clear();
+                            btnConfirmarAsientos.setEnabled(false);
+                            PuedeComprar = false;
+                        }else{
+                            mensaje = "Error: Algunos asientos ya están reservados, puede elegir otros";
                         }
-                        reservados.clear();
-                        btnConfirmarAsientos.setEnabled(false);
-                        PuedeComprar=false;
+                        JOptionPane.showMessageDialog(Sala, mensaje);
+                    }else{
+                        JOptionPane.showMessageDialog(Sala, "Compra cancelada, puede seguir comprando otros asientos");
                     }
                 }
             });
@@ -187,8 +197,32 @@ public class ReservaAsientosCine {
         Image imagenRedimensionada = imagen.getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
         return new ImageIcon(imagenRedimensionada);
     }
+    private boolean comprar(BufferedReader in,BufferedWriter out) {
+        try{
+            for (JButton s : reservados) {
+                System.out.println(s.getText());
+                out.write(s.getText() + "\n");
+            }
+            out.write("ACABADO\n");
+            out.flush();
+            return in.readLine().equals("true");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
+    private int calcularCoste() {
+        return reservados.size() * precio_asiento;
+    }
+    private void gestionarBotonCompra() {
+        // Habilitar el boton si hay asientos seleccionados
+        btnConfirmarAsientos.setEnabled(SeleccionoTodos());
+    }
 
+    private boolean SeleccionoTodos() {
+        return reservados.size()==Integer.parseInt(numAsientosReserva)&& PuedeComprar;
+    }
     private int pedirAsientos(String clave,BufferedReader in,BufferedWriter out) {
         int numero=0;
         try {
