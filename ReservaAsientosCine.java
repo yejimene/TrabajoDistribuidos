@@ -93,11 +93,11 @@ public class ReservaAsientosCine {
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             JPanel panelPantalla = new JPanel();
             panelPantalla.setBackground(Color.LIGHT_GRAY);
-            JLabel TextoPantalla = new JLabel("Pantalla");
-            panelPantalla.add(TextoPantalla);
+            JLabel textoPantalla = new JLabel("Pantalla");
+            panelPantalla.add(textoPantalla);
 
             JPanel panelAsientos = new JPanel(new BorderLayout());
-            JPanel PanelCentral= new JPanel(new GridLayout(Filas, Columnas));
+            JPanel panelCentral= new JPanel(new GridLayout(Filas, Columnas));
             asientos = new JButton[Filas][Columnas];
             for (int i = 0; i < Filas; i++) {
                 for (int j = 0; j < Columnas; j++) {
@@ -118,7 +118,7 @@ public class ReservaAsientosCine {
                             gestionarBotonCompra();
                         }
                     });
-                    PanelCentral.add(asientos[i][j]);
+                    panelCentral.add(asientos[i][j]);
                 }
             }
             // Para añadir el numero de las filas
@@ -128,7 +128,7 @@ public class ReservaAsientosCine {
             }
             // añade al panel de los asientos(que engloba tanto los asientos como las filas), los asientos y las filas numeradas
             panelAsientos.add(panelFilas, BorderLayout.WEST);
-            panelAsientos.add(PanelCentral, BorderLayout.CENTER);
+            panelAsientos.add(panelCentral, BorderLayout.CENTER);
             //pedimos los asientos disponibles despues de cargar todos.
             int n=pedirAsientos(clave,in,out);
             if(Integer.parseInt(numAsientosReserva)>((Filas*Columnas))-n) {
