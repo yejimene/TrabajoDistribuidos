@@ -5,8 +5,8 @@ import java.util.concurrent.Executors;
 
 public class Servidor {
     public static void main(String args[]) {
+ExecutorService hilo= Executors.newCachedThreadPool();
         try(ServerSocket s= new ServerSocket(55555)){
-            ExecutorService hilo= Executors.newCachedThreadPool();
             while(true) {
                 try{
                     hilo.execute(new Procesar(s.accept()));
