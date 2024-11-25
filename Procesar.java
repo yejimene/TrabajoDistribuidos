@@ -14,8 +14,8 @@ public class Procesar implements Runnable {
         this.s= s;
     }
     public void run() {
-        try(BufferedReader in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8")) ;
-            BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"))){
+        try(BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"));
+            BufferedReader in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8"))){
             String id;
             clave= in.readLine();
             System.out.println(clave);

@@ -89,8 +89,8 @@ public class ReservaAsientosCine {
 
         try {
             socket = new Socket("localhost", 55555);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
             JPanel panelPantalla = new JPanel();
             panelPantalla.setBackground(Color.LIGHT_GRAY);
             JLabel textoPantalla = new JLabel("Pantalla");
