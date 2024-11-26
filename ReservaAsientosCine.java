@@ -44,9 +44,9 @@ public class ReservaAsientosCine {
         String[] cantidadAsientos = {"1", "2", "3","10"};
         comboAsientos= new JComboBox<>(cantidadAsientos);
         JButton btnConfirmarSeleccion = new JButton("Confirmar");
-        btnConfirmarSeleccion.addMouseListener(new MouseAdapter() {
+        btnConfirmarSeleccion.addActionListener(new ActionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 mostrarSala();
             }
         });
@@ -104,9 +104,9 @@ public class ReservaAsientosCine {
                     asientos[i][j] = new JButton((i+1) + "-" + (j+1));
                     asientos[i][j].setIcon(asientoDisponible);
                     asientos[i][j].setFocusable(false);
-                    asientos[i][j].addMouseListener(new MouseAdapter() {
+                    asientos[i][j].addActionListener(new ActionListener() {
                         @Override
-                        public void mouseClicked(MouseEvent e) {
+                        public void actionPerformed(ActionEvent e) {
                             JButton boton = (JButton) e.getSource();
                             if (boton.getIcon() == asientoDisponible) {
                                 boton.setIcon(asientoSeleccionado);
@@ -136,9 +136,9 @@ public class ReservaAsientosCine {
             }
             //boton para regresar a la pantalla anterior
             JButton btnCerrar = new JButton("Regresar");
-            btnCerrar.addMouseListener(new MouseAdapter() {
+            btnCerrar.addActionListener(new ActionListener() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     liberarRecursos();
                     Sala.dispose();
                     principal.setVisible(true);
@@ -148,9 +148,9 @@ public class ReservaAsientosCine {
             // boton de confirmar asientos (siempre visible, pero habilitado dependiendo de los asientos seleccionados)
             btnConfirmarAsientos = new JButton("Comprar");
             btnConfirmarAsientos.setEnabled(false);
-            btnConfirmarAsientos.addMouseListener(new MouseAdapter() {
+            btnConfirmarAsientos.addActionListener(new ActionListener() {
                 @Override
-                public void  mouseClicked(MouseEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     int total = calcularCoste();
                     int num =  JOptionPane.showConfirmDialog(Sala, "Confirmar la compra. Coste Total: €" + total, "Confirmacion", JOptionPane.YES_NO_OPTION);
                     if (num == JOptionPane.YES_OPTION) {
@@ -217,10 +217,10 @@ public class ReservaAsientosCine {
     }
     private void gestionarBotonCompra() {
         // Habilitar el boton si hay asientos seleccionados
-        btnConfirmarAsientos.setEnabled(SeleccionoTodos());
+        btnConfirmarAsientos.setEnabled(seleccionoTodos());
     }
 
-    private boolean SeleccionoTodos() {
+    private boolean seleccionoTodos() {
         return reservados.size()==Integer.parseInt(numAsientosReserva)&& PuedeComprar;
     }
     private int pedirAsientos(String clave,BufferedReader in,BufferedWriter out) {

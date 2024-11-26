@@ -6,7 +6,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Procesar implements Runnable {
-   private Socket s;
+    private Socket s;
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<String, Vector<String>>();
     private List<String> lista= new ArrayList<>();
     private String clave;
@@ -17,7 +17,7 @@ public class Procesar implements Runnable {
         BufferedWriter out=null;
         BufferedReader in=null;
         try{
-         out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"));
+            out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"));
             in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8"));
             String id;
             clave= in.readLine();
@@ -39,11 +39,11 @@ public class Procesar implements Runnable {
         }catch(IOException e){
             e.printStackTrace();
         }finally {
-            CerrarTodo(out, in, s);
+            cerrarTodo(out, in, s);
         }
     }
 
-  public void CerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
+    public void cerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
         if (in != null) {
             try {
                 in.close();
@@ -82,7 +82,7 @@ public class Procesar implements Runnable {
         }
         return true;
     }
-    public void enviarAsientosOcupados(String clave,BufferedWriter out) throws IOException {
+    public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
         Cine.putIfAbsent(clave, new Vector<>());
         if(Cine.get(clave).isEmpty()) {
             out.write("NADA"+"\n");
