@@ -6,7 +6,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Procesar implements Runnable {
-    Socket s;
+   private Socket s;
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<String, Vector<String>>();
     private List<String> lista= new ArrayList<>();
     private String clave;
@@ -14,8 +14,11 @@ public class Procesar implements Runnable {
         this.s= s;
     }
     public void run() {
-        try(BufferedWriter out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"));
-            BufferedReader in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8"))){
+        BufferedWriter out=null;
+        BufferedReader in=null;
+        try{
+         out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"));
+            in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8"));
             String id;
             clave= in.readLine();
             System.out.println(clave);
@@ -36,9 +39,29 @@ public class Procesar implements Runnable {
         }catch(IOException e){
             e.printStackTrace();
         }finally {
+            CerrarTodo(out, in, s);
+        }
+    }
+
+  public void CerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (s != null) {
             try {
                 s.close();
-            }catch(IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -59,21 +82,17 @@ public class Procesar implements Runnable {
         }
         return true;
     }
-    public void enviarAsientosOcupados(String clave,BufferedWriter out) {
-        try {
-            Cine.putIfAbsent(clave, new Vector<String>());
-            if(Cine.get(clave).isEmpty()) {
-                out.write("NADA"+"\n");
-                out.flush();
-            }else {
-                for(String s : Cine.get(clave)) {
-                    out.write(s+"\n");
-                }
-                out.write("FIN\n");
-                out.flush();
+    public void enviarAsientosOcupados(String clave,BufferedWriter out) throws IOException {
+        Cine.putIfAbsent(clave, new Vector<>());
+        if(Cine.get(clave).isEmpty()) {
+            out.write("NADA"+"\n");
+            out.flush();
+        }else {
+            for(String s : Cine.get(clave)) {
+                out.write(s+"\n");
             }
-        }catch(IOException e) {
-            e.printStackTrace();
+            out.write("FIN\n");
+            out.flush();
         }
     }
 }

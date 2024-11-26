@@ -11,9 +11,9 @@ public class ReservaAsientosCine {
     private JComboBox<String> comboHoras;
     private JComboBox<String> comboAsientos;
     private String numAsientosReserva;
-    private Socket socket;
-    private BufferedReader in;
-    private BufferedWriter out;
+    private Socket socket=null;
+    private BufferedReader in=null;
+    private BufferedWriter out=null;
     private JButton[][] asientos;
     private final int Filas= 5;
     private final int Columnas = 8;
@@ -89,7 +89,7 @@ public class ReservaAsientosCine {
 
         try {
             socket = new Socket("localhost", 55555);
-            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
             JPanel panelPantalla = new JPanel();
             panelPantalla.setBackground(Color.LIGHT_GRAY);
@@ -243,14 +243,27 @@ public class ReservaAsientosCine {
     }
     private void liberarRecursos() {
         reservados.clear();
-        PuedeComprar=true;
-        try {
-            if (in != null) in.close();
-            if (out != null) out.close();
-            if (socket != null) socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        PuedeComprar = true;
+        if(in!=null){
+            try{
+                in.close();
+            }catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(out!=null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(socket!=null) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-
 }
