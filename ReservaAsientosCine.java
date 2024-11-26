@@ -11,10 +11,10 @@ public class ReservaAsientosCine {
     private JComboBox<String> comboHoras;
     private JComboBox<String> comboAsientos;
     private String numAsientosReserva;
+    private BufferedWriter out=null;
     private Socket socket=null;
     private BufferedReader in=null;
-    private BufferedWriter out=null;
-    private JButton[][] asientos;
+       private JButton[][] asientos;
     private final int Filas= 5;
     private final int Columnas = 8;
     private final int precio_asiento = 10;
@@ -244,13 +244,6 @@ public class ReservaAsientosCine {
     private void liberarRecursos() {
         reservados.clear();
         PuedeComprar = true;
-        if(in!=null){
-            try{
-                in.close();
-            }catch(IOException e) {
-                e.printStackTrace();
-            }
-        }
         if(out!=null) {
             try {
                 out.close();
@@ -258,6 +251,14 @@ public class ReservaAsientosCine {
                 e.printStackTrace();
             }
         }
+        if(in!=null){
+            try{
+                in.close();
+            }catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         if(socket!=null) {
             try {
                 socket.close();

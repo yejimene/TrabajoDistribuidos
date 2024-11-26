@@ -44,13 +44,6 @@ public class Procesar implements Runnable {
     }
 
     public void cerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
-        if (in != null) {
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
         if (out != null) {
             try {
                 out.close();
@@ -58,6 +51,14 @@ public class Procesar implements Runnable {
                 e.printStackTrace();
             }
         }
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         if (s != null) {
             try {
                 s.close();
