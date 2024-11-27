@@ -25,6 +25,11 @@ public class Procesar implements Runnable {
             enviarAsientosOcupados(clave,out);
             id = in.readLine();
             while(id!=null &&!id.equals("COMPRAR") ) {
+                if(id.equals("ELIMINAR")){
+                    while (!id.startsWith("ACABADO")) {
+
+                    }
+                }
                 while (!id.startsWith("ACABADO")) {
                     System.out.println(id);
                     if(!asientosPrematuros.contains(id)){
@@ -33,6 +38,7 @@ public class Procesar implements Runnable {
                     System.out.println(asientosPrematuros.size());
                     id=in.readLine();
                 }
+
                 id= in.readLine();
             }
             if(comprar(asientosPrematuros)){
