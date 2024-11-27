@@ -104,9 +104,11 @@ public class ReservaAsientosCine {
                         if (boton.getIcon() == asientoDisponible) {
                             boton.setIcon(asientoSeleccionado);
                             reservaLogica.agregarAsiento(boton);
+                            reservaComunicacion.enviarPrematuramente(reservaLogica.getReservados());
                         } else if (boton.getIcon() == asientoSeleccionado) {
                             boton.setIcon(asientoDisponible);
                             reservaLogica.quitarAsiento(boton);
+                            reservaComunicacion.eliminarPrematuramente(reservaLogica.getReservados());
                         }
                         // Habilitar el boton si hay asientos seleccionados
                         reservaLogica.habilitarCompra(btnConfirmarAsientos, Integer.parseInt(numAsientosReserva));
@@ -158,7 +160,7 @@ public class ReservaAsientosCine {
                 int total = reservaLogica.calcularCoste();
                 int num = JOptionPane.showConfirmDialog(sala, "Confirmar la compra. Coste Total: €" + total, "Confirmación", JOptionPane.YES_NO_OPTION);
                 if (num == JOptionPane.YES_OPTION) {
-                    boolean compraExitosa = reservaComunicacion.comprarAsientos(reservaLogica.getReservados());
+                    boolean compraExitosa = reservaComunicacion.comprarAsientos();
                     String mensaje;
                     if (compraExitosa) {
                         mensaje = "Compra realizada con éxito. Coste total: €" + total;
