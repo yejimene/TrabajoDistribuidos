@@ -4,6 +4,9 @@ import java.awt.event.*;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
+
+    private static int id=0;
+    private int idUnico=0;
     private JComboBox<String> comboPeliculas;
     private JComboBox<String> comboHoras;
     private JComboBox<String> comboAsientos;
@@ -24,7 +27,6 @@ public class ReservaAsientosCine {
         principal.setSize(400, 200);
         principal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         principal.setLocationRelativeTo(null);
-
         // Panel de selección de pelicula y hora
         JPanel panelSeleccion = new JPanel();
         panelSeleccion.setLayout(new GridLayout(4, 2, 10, 10));
@@ -68,6 +70,10 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
+        synchronized (ReservaAsientosCine.class){
+            idUnico=id+1;
+            id++;
+        }
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
@@ -79,9 +85,17 @@ public class ReservaAsientosCine {
         sala.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                liberarRecursos();
                 principal.setVisible(true);
+                System.out.println(reservaLogica.getReservados());
+                for (JButton boton : reservaLogica.getReservados()) {
+                    if (boton.getIcon() == asientoSeleccionado) {
+                        System.out.println(boton.getText());
+                        reservaComunicacion.eliminarPrematuramente(boton, idUnico);
+                    }
+                }
+                liberarRecursos();
             }
+
         });
 
         JPanel panelPantalla = new JPanel();
@@ -101,14 +115,14 @@ public class ReservaAsientosCine {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         JButton boton = (JButton) e.getSource();
-                        if (boton.getIcon() == asientoDisponible) {
+                        if (boton.getIcon() == asientoDisponible && (reservaLogica.getReservados().size()<Integer.parseInt(numAsientosReserva))) {
                             boton.setIcon(asientoSeleccionado);
                             reservaLogica.agregarAsiento(boton);
-                            reservaComunicacion.enviarPrematuramente(reservaLogica.getReservados());
+                            reservaComunicacion.enviarPrematuramente((JButton)e.getSource(),idUnico);
                         } else if (boton.getIcon() == asientoSeleccionado) {
                             boton.setIcon(asientoDisponible);
                             reservaLogica.quitarAsiento(boton);
-                            reservaComunicacion.eliminarPrematuramente(reservaLogica.getReservados());
+                            reservaComunicacion.eliminarPrematuramente((JButton)e.getSource(),idUnico);
                         }
                         // Habilitar el boton si hay asientos seleccionados
                         reservaLogica.habilitarCompra(btnConfirmarAsientos, Integer.parseInt(numAsientosReserva));
@@ -145,9 +159,15 @@ public class ReservaAsientosCine {
         btnCerrar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                liberarRecursos();
                 sala.dispose();
                 principal.setVisible(true);
+                for (JButton boton : reservaLogica.getReservados()) {
+                    if (boton.getIcon() == asientoSeleccionado) {
+                        System.out.println(boton.getText());
+                        reservaComunicacion.eliminarPrematuramente(boton, idUnico);
+                    }
+                }
+                liberarRecursos();
             }
         });
 

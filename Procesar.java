@@ -1,13 +1,13 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Procesar implements Runnable {
     private Socket s;
-    private static ConcurrentHashMap<String,Boolean> asientosPrematuros = new ConcurrentHashMap<>();
+    private static Vector<String> asientosPrematuros = new Vector<>();
+    private int idUsuario;
+    private static ConcurrentHashMap<Integer,Vector<String>> asientosUsuario= new  ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<>();
     private String clave;
     public Procesar(Socket s) {
@@ -24,24 +24,30 @@ public class Procesar implements Runnable {
             System.out.println(clave);
             enviarAsientosOcupados(clave,out);
             id = in.readLine();
-            while(id!=null &&!id.equals("COMPRAR") ) {
+            System.out.println(id);
+            while(id!=null &&!id.equals("Comprar")) {
+                System.out.println(id);
+                idUsuario=Integer.parseInt(id);
+                id=in.readLine();
                 if(id.equals("ELIMINAR")){
-                    while (!id.startsWith("ACABADO")) {
-
-                    }
-                }
-                while (!id.startsWith("ACABADO")) {
-                    System.out.println(id);
-                    if(!asientosPrematuros.contains(id)){
-                        asientosPrematuros.put(id,true);
-                    }
-                    System.out.println(asientosPrematuros.size());
                     id=in.readLine();
+                    System.out.println(id);
+                        asientosPrematuros.remove(id);
+                        asientosUsuario.put(idUsuario,asientosPrematuros);
+                        System.out.println(asientosPrematuros.size());
+                }else {
+
+                    System.out.println(id);
+                    if (!asientosPrematuros.contains(id)) {
+                        asientosPrematuros.add(id);
+                    }
+                    asientosUsuario.put(idUsuario,asientosPrematuros);
+                    System.out.println(asientosPrematuros.size());
                 }
 
                 id= in.readLine();
             }
-            if(comprar(asientosPrematuros)){
+            if(comprar(asientosUsuario,idUsuario)){
                 System.out.println("true");
                 out.write("true\n");
                 out.flush();
@@ -82,17 +88,20 @@ public class Procesar implements Runnable {
         }
     }
 
-    public boolean comprar(ConcurrentHashMap<String,Boolean> s) {
+    public boolean comprar(ConcurrentHashMap<Integer,Vector<String>> mapa,int num) {
         synchronized (Cine) {
+            if(mapa.get(num).isEmpty()){
+                return true;
+            }
             Vector<String> vector = Cine.get(clave);
             for (String linea : vector) {
-                for (String s1 : s.keySet()) {
+                for (String s1 : mapa.get(num)) {
                     if (linea.equals(s1)) {
                         return false;
                     }
                 }
             }
-            for (String s1 :  s.keySet()) {
+            for (String s1 :  mapa.get(num)) {
                 vector.add(s1);
 
             }
@@ -109,7 +118,7 @@ public class Procesar implements Runnable {
             for(String s : Cine.get(clave)) {
                 out.write(s+"\n");
             }
-            for(String s: asientosPrematuros.keySet()){
+            for(String s: asientosPrematuros){
                 System.out.println(s);
                 out.write(s+"\n");
             }

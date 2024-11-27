@@ -41,7 +41,9 @@ public class ReservaComunicacion {
 
     public boolean comprarAsientos() {
         try {
-            out.write("COMPRAR\n");
+            System.out.println("COmpramos");
+            out.write("Comprar\n");
+            out.flush();
             return in.readLine().equals("true");
         } catch (IOException e) {
             e.printStackTrace();
@@ -58,23 +60,20 @@ public class ReservaComunicacion {
             e.printStackTrace();
         }
     }
-    public void enviarPrematuramente(ArrayList<JButton> reservados){
+    public void enviarPrematuramente(JButton boton,int id){
         try {
-            for (JButton boton : reservados) {
-                out.write(boton.getText() + "\n");
-            }
-            out.write("ACABADO prematuramente\n");
+            out.write(id+"\n");
+            out.write(boton.getText()+"\n");
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void eliminarPrematuramente(ArrayList<JButton> reservados){
+    public void eliminarPrematuramente(JButton boton,int id){
         try {
-            for (JButton boton : reservados) {
-                out.write(boton.getText() + "\n");
-            }
-            out.write("ACABADO prematuramente\n");
+            out.write(id+"\n");
+            out.write("ELIMINAR\n");
+            out.write(boton.getText() + "\n");
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
