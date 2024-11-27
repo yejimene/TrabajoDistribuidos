@@ -4,7 +4,7 @@ import javax.swing.*;
 public class ReservaLogica {
     private final int precio_asiento = 10;
     private ArrayList<JButton> reservados = new ArrayList<>();
-    private boolean puedeComprar = true;
+    private boolean puedeComprar= true;
 
     public int calcularCoste() {
         return reservados.size() * precio_asiento;
@@ -24,6 +24,9 @@ public class ReservaLogica {
 
     public void habilitarCompra(JButton btnConfirmarAsientos, int numAsientosReserva) {
         btnConfirmarAsientos.setEnabled(seleccionoTodos(numAsientosReserva));
+    }
+    public boolean puedeComprarAsientos(){
+        return puedeComprar;
     }
 
     public void limpiarReservas() {

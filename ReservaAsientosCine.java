@@ -115,7 +115,7 @@ public class ReservaAsientosCine {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         JButton boton = (JButton) e.getSource();
-                        if (boton.getIcon() == asientoDisponible && (reservaLogica.getReservados().size()<Integer.parseInt(numAsientosReserva))) {
+                        if (boton.getIcon() == asientoDisponible && (reservaLogica.getReservados().size()<Integer.parseInt(numAsientosReserva)) && reservaLogica.puedeComprarAsientos()) {
                             boton.setIcon(asientoSeleccionado);
                             reservaLogica.agregarAsiento(boton);
                             reservaComunicacion.enviarPrematuramente((JButton)e.getSource(),idUnico);
