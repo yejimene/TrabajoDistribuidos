@@ -68,20 +68,22 @@ public class Procesar implements Runnable {
         }
     }
 
-    public synchronized boolean comprar(List<String> s) {
-        Vector<String> vector= Cine.get(clave);
-        for(String linea: vector) {
-            for(String s1: s) {
-                if(linea.equals(s1)) {
-                    return false;
+    public boolean comprar(List<String> s) {
+        synchronized (Cine) {
+            Vector<String> vector = Cine.get(clave);
+            for (String linea : vector) {
+                for (String s1 : s) {
+                    if (linea.equals(s1)) {
+                        return false;
+                    }
                 }
             }
-        }
-        for(String s1: s) {
-            vector.add(s1);
+            for (String s1 : s) {
+                vector.add(s1);
 
+            }
+            return true;
         }
-        return true;
     }
     public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
         Cine.putIfAbsent(clave, new Vector<>());
