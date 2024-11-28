@@ -1,13 +1,15 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Procesar implements Runnable {
     private Socket s;
-    private static ConcurrentHashMap<Integer, Vector<String>> asientosUsuarios = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Integer, Map<String, Vector<String>>> asientosUsuarios = new ConcurrentHashMap<>();
     private int idUsuario;
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<>();
+    private boolean puedeComprar = true;
     private String clave;
 
     public Procesar(Socket s) {
@@ -22,44 +24,31 @@ public class Procesar implements Runnable {
             in = new BufferedReader(new InputStreamReader(s.getInputStream(), "UTF-8"));
             String id;
             clave = in.readLine();
-            System.out.println(clave);
             enviarAsientosOcupados(clave, out);
             id = in.readLine();
-            System.out.println(id);
+
             while (id != null && !id.equals("Comprar")) {
-                System.out.println(id);
-                idUsuario = Integer.parseInt(id);
+                idUsuario = Integer.parseInt(id); // Identificar al usuario
                 id = in.readLine();
+
                 if (id.equals("ELIMINAR")) {
-                    id = in.readLine();
-                    System.out.println(id);
-                    if (!algunoContiene(id) && !asientosUsuarios.get(idUsuario).isEmpty()) {
-                        asientosUsuarios.get(idUsuario).remove(id);
-                    }
-                    System.out.println(asientosUsuarios.get(idUsuario).size());
+                    id = in.readLine(); // Asiento a eliminar
+                    deseleccionarAsiento(id, idUsuario);
                 } else {
-                    System.out.println(id);
-                    if (!algunoContiene(id)) {
-                        if (!asientosUsuarios.containsKey(idUsuario)) {
-                            asientosUsuarios.put(idUsuario, new Vector<>());
-                        }
-                        asientosUsuarios.get(idUsuario).add(id);
-                    }
+                    seleccionarAsiento(id, idUsuario);
                 }
 
                 id = in.readLine();
             }
 
-            if (id != null && comprar(idUsuario)) {
-                System.out.println("true");
+            if (id != null && validarYComprar(idUsuario)) {
                 out.write("true\n");
-                out.flush();
             } else {
-                asientosUsuarios.remove(idUsuario);
-                System.out.println("false");
+                cancelarSeleccion(idUsuario);
                 out.write("false\n");
-                out.flush();
             }
+            out.flush();
+            mostrarAsientosReservados();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -67,93 +56,121 @@ public class Procesar implements Runnable {
         }
     }
 
-    public void cerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
-        if (out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (in != null) {
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (s != null) {
-            try {
-                s.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+    public void seleccionarAsiento(String idAsiento, int usuario) {
+        synchronized (asientosUsuarios) {
+            if (!algunoContiene(idAsiento) && puedeComprar) {
+                asientosUsuarios.putIfAbsent(usuario, new ConcurrentHashMap<>());
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                peliculas.putIfAbsent(clave, new Vector<>());
+                peliculas.get(clave).add(idAsiento);
+            } else {
+                puedeComprar = false;
             }
         }
     }
 
-    public boolean algunoContiene(String id) {
 
-        for (Integer usuario : asientosUsuarios.keySet()) {
-
-            if (usuario != idUsuario) {
-                Vector<String> asientos = asientosUsuarios.get(usuario);
-                if (asientos.contains(id)) {
-                    return true;
+    public void deseleccionarAsiento(String idAsiento, int usuario) {
+        synchronized (asientosUsuarios) {
+            if (!algunoContiene(idAsiento)) {
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                if (peliculas != null && peliculas.containsKey(clave)) {
+                    Vector<String> asientosUsuario = peliculas.get(clave);
+                    asientosUsuario.remove(idAsiento);
+                    if (asientosUsuario.isEmpty()) {
+                        peliculas.remove(clave);
+                    }
+                    puedeComprar = true;
                 }
+            } else {
+                puedeComprar = false;
             }
         }
-        return false;  // Si no se encuentra el asiento ocupado por otro usuario, retornamos false
     }
 
-
-    public boolean comprar(int num) {
+    public boolean validarYComprar(int usuario) {
         synchronized (Cine) {
-            // Verifica si el usuario tiene asientos reservados
-            if (asientosUsuarios.get(num) == null || asientosUsuarios.get(num).isEmpty()) {
-                return false;
-            }
-
-            Vector<String> vector = Cine.get(clave);
-            boolean compraValida = true;
-
-            // Verifica si alguno de los asientos reservados ya está ocupado en el cine
-            for (String s1 : asientosUsuarios.get(num)) {
-                if (vector.contains(s1)) {
-                    compraValida = false;
-                    break;
+            synchronized (asientosUsuarios) {
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                if (peliculas == null || !peliculas.containsKey(clave) || peliculas.get(clave).isEmpty() || !puedeComprar) {
+                    return false;
                 }
+                Cine.putIfAbsent(clave, new Vector<>());
+                Cine.get(clave).addAll(peliculas.get(clave));
+                return true;
             }
-
-            if (compraValida) {
-                // Si la compra es válida, actualiza los asientos ocupados
-                for (String s1 : asientosUsuarios.get(num)) {
-                    vector.add(s1);
-                }
-            }
-
-            return compraValida;
         }
     }
+
+    public void cancelarSeleccion(int usuario) {
+        synchronized (asientosUsuarios) {
+            asientosUsuarios.remove(usuario);
+        }
+    }
+
+
+    public boolean algunoContiene(String idAsiento) {
+        synchronized (asientosUsuarios) {
+            for (int usuario : asientosUsuarios.keySet()) {
+                if (usuario != idUsuario) {
+                    Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                    if (peliculas != null && peliculas.containsKey(clave) && peliculas.get(clave).contains(idAsiento)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
 
     public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
-        Cine.putIfAbsent(clave, new Vector<>());
-        if (Cine.get(clave).isEmpty() && asientosUsuarios.isEmpty()) {
-            out.write("NADA" + "\n");
-            out.flush();
-        } else {
-            // Enviar los asientos ocupados por el cine
-            for (String s : Cine.get(clave)) {
-                out.write(s + "\n");
+        synchronized (Cine) {
+            Vector<String> ocupados = Cine.getOrDefault(clave, new Vector<>());
+            for (String asiento : ocupados) {
+                out.write(asiento + "\n");
             }
-            // Enviar los asientos ocupados por los usuarios
-            for (Vector<String> asientos : asientosUsuarios.values()) {
-                for (String s : asientos) {
-                    out.write(s + "\n");
+        }
+        synchronized (asientosUsuarios) {
+            for (Map<String, Vector<String>> peliculas : asientosUsuarios.values()) {
+                if (peliculas.containsKey(clave)) {
+                    for (String asiento : peliculas.get(clave)) {
+                        out.write(asiento + "\n");
+                    }
                 }
             }
-            out.write("FIN\n");
-            out.flush();
+        }
+        out.write("FIN\n");
+        out.flush();
+    }
+
+
+    public void mostrarAsientosReservados() {
+        synchronized (asientosUsuarios) {
+            for (Integer usuario : asientosUsuarios.keySet()) {
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                if (peliculas != null && peliculas.containsKey(clave)) {
+                    Vector<String> asientos = peliculas.get(clave);
+                    System.out.print("Usuario " + usuario + " ha reservado los asientos para la película y hora " + clave + ": ");
+                    if (asientos != null && !asientos.isEmpty()) {
+                        for (String asiento : asientos) {
+                            System.out.print(asiento + " ");
+                        }
+                    }
+                    System.out.println();
+                }
+            }
+        }
+    }
+
+
+    public void cerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
+        try {
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (s != null) s.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

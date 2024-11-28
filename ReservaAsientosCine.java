@@ -197,8 +197,6 @@ public class ReservaAsientosCine {
                         mensaje = "Error: Algunos asientos ya están reservados";
                         JOptionPane.showMessageDialog(sala, mensaje);
                         btnCerrar.doClick();
-                        sala.dispose();
-                        principal.setVisible(true);
                         JOptionPane.showMessageDialog(sala, "vuelve a iniciar sesion para coger asientos");
                      return;
                     }
