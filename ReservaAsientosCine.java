@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Scanner;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
@@ -68,7 +69,9 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
-        idUnico = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+        System.out.println("Escribe tu dni: ");
+        Scanner sc= new Scanner(System.in);
+        idUnico =  sc.nextInt();
         System.out.println(idUnico);
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
@@ -183,7 +186,7 @@ public class ReservaAsientosCine {
                 int total = reservaLogica.calcularCoste();
                 int num = JOptionPane.showConfirmDialog(sala, "Confirmar la compra. Coste Total: €" + total, "Confirmación", JOptionPane.YES_NO_OPTION);
                 if (num == JOptionPane.YES_OPTION) {
-                    boolean compraExitosa = reservaComunicacion.comprarAsientos();
+                    boolean compraExitosa = reservaComunicacion.comprarAsientos(reservaLogica.getReservados());
                     String mensaje;
                     if (compraExitosa) {
                         mensaje = "Compra realizada con éxito. Coste total: €" + total;

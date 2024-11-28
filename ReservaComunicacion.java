@@ -39,10 +39,14 @@ public class ReservaComunicacion {
         return numero;
     }
 
-    public boolean comprarAsientos() {
+    public boolean comprarAsientos(ArrayList<JButton> reservados) {
         try {
             System.out.println("COmpramos");
             out.write("Comprar\n");
+            for(JButton s: reservados){
+                out.write(s.getText()+"\n");
+            }
+            out.write("FIN\n");
             out.flush();
             return in.readLine().equals("true");
         } catch (IOException e) {

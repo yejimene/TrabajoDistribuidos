@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,8 +41,12 @@ public class Procesar implements Runnable {
 
                 id = in.readLine();
             }
-
-            if (id != null && validarYComprar(idUsuario)) {
+            ArrayList<String> asientosDeseados = new ArrayList<>();
+            String asiento;
+            while ((asiento = in.readLine()) != null && !asiento.equals("FIN")) {
+                asientosDeseados.add(asiento);
+            }
+            if (id != null && validarYComprar(idUsuario,asientosDeseados)) {
                 out.write("true\n");
             } else {
                 cancelarSeleccion(idUsuario);
@@ -90,22 +95,54 @@ public class Procesar implements Runnable {
         }
     }
 
-    public boolean validarYComprar(int usuario) {
-        Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-        if (peliculas == null || !peliculas.containsKey(clave) || peliculas.get(clave).isEmpty() || !puedeComprar) {
-            return false;
+    public boolean validarYComprar(int usuario, ArrayList<String> asientosDeseados) {
+        synchronized (Cine) {
+            synchronized (asientosUsuarios) {
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                if (peliculas == null || !peliculas.containsKey(clave)) {
+                    return false;
+                }
+
+                Vector<String> asientosReservados = peliculas.get(clave);
+                for (String asiento : asientosDeseados) {
+                    if (!asientosReservados.contains(asiento)) {
+                        return false;
+                    }
+                }
+
+                Cine.putIfAbsent(clave, new Vector<>());
+                Cine.get(clave).addAll(asientosDeseados);
+                if (asientosReservados.isEmpty()) {
+                    peliculas.remove(clave);
+                }
+
+                return true;
+            }
         }
-        Cine.putIfAbsent(clave, new Vector<>());
-        Cine.get(clave).addAll(peliculas.get(clave));
-        return true;
     }
+
 
 
     public void cancelarSeleccion(int usuario) {
         synchronized (asientosUsuarios) {
-            asientosUsuarios.remove(usuario);
+            Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+            if (peliculas != null && peliculas.containsKey(clave)) {
+                Vector<String> asientosUsuario = peliculas.get(clave);
+
+                ArrayList<String> asientosAEliminar = new ArrayList<>();
+
+                for (String asiento : asientosUsuario) {
+                    if (!(Cine.containsKey(clave) && Cine.get(clave).contains(asiento))) {
+                        asientosAEliminar.add(asiento);
+                    }
+                }
+                if (asientosUsuario.isEmpty()) {
+                    peliculas.remove(clave);
+                }
+            }
         }
     }
+
 
 
     public boolean algunoContiene(String idAsiento) {
