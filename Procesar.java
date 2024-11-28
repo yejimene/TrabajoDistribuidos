@@ -89,18 +89,15 @@ public class Procesar implements Runnable {
     }
 
     public boolean validarYComprar(int usuario) {
-        synchronized (Cine) {
-            synchronized (asientosUsuarios) {
-                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                if (peliculas == null || !peliculas.containsKey(clave) || peliculas.get(clave).isEmpty() || !puedeComprar) {
-                    return false;
-                }
-                Cine.putIfAbsent(clave, new Vector<>());
-                Cine.get(clave).addAll(peliculas.get(clave));
-                return true;
-            }
+        Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+        if (peliculas == null || !peliculas.containsKey(clave) || peliculas.get(clave).isEmpty() || !puedeComprar) {
+            return false;
         }
+        Cine.putIfAbsent(clave, new Vector<>());
+        Cine.get(clave).addAll(peliculas.get(clave));
+        return true;
     }
+
 
     public void cancelarSeleccion(int usuario) {
         synchronized (asientosUsuarios) {
@@ -146,10 +143,10 @@ public class Procesar implements Runnable {
 
 
     public void mostrarAsientosReservados() {
-        synchronized (asientosUsuarios) {
-            for (Integer usuario : asientosUsuarios.keySet()) {
-                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                if (peliculas != null && peliculas.containsKey(clave)) {
+        for (Integer usuario : asientosUsuarios.keySet()) {
+            Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+            if (peliculas != null && !peliculas.isEmpty()) {
+                for (String clave : peliculas.keySet()) {
                     Vector<String> asientos = peliculas.get(clave);
                     System.out.print("Usuario " + usuario + " ha reservado los asientos para la película y hora " + clave + ": ");
                     if (asientos != null && !asientos.isEmpty()) {
@@ -162,6 +159,7 @@ public class Procesar implements Runnable {
             }
         }
     }
+
 
 
     public void cerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
