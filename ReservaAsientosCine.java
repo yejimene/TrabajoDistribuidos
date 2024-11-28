@@ -4,8 +4,6 @@ import java.awt.event.*;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
-
-    private static int id=0;
     private int idUnico=0;
     private JComboBox<String> comboPeliculas;
     private JComboBox<String> comboHoras;
@@ -70,10 +68,8 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
-        synchronized (ReservaAsientosCine.class){
-            idUnico=id+1;
-            id++;
-        }
+        idUnico = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+        System.out.println(idUnico);
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
@@ -95,7 +91,6 @@ public class ReservaAsientosCine {
                 }
                 liberarRecursos();
             }
-
         });
 
         JPanel panelPantalla = new JPanel();
@@ -106,25 +101,33 @@ public class ReservaAsientosCine {
         JPanel panelAsientos = new JPanel(new BorderLayout());
         JPanel panelCentral = new JPanel(new GridLayout(Filas, Columnas));
         asientos = new JButton[Filas][Columnas];
+
+        // Crear los asientos con la selección anterior y los ocupados
         for (int i = 0; i < Filas; i++) {
             for (int j = 0; j < Columnas; j++) {
                 asientos[i][j] = new JButton((i + 1) + "-" + (j + 1));
                 asientos[i][j].setIcon(asientoDisponible);
                 asientos[i][j].setFocusable(false);
+
+                // Si el asiento estaba reservado previamente, se marca como ocupado
+                if (reservaLogica.getReservados().contains(asientos[i][j])) {
+                    asientos[i][j].setIcon(asientoSeleccionado);
+                }
+
                 asientos[i][j].addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         JButton boton = (JButton) e.getSource();
-                        if (boton.getIcon() == asientoDisponible && (reservaLogica.getReservados().size()<Integer.parseInt(numAsientosReserva)) && reservaLogica.puedeComprarAsientos()) {
+                        if (boton.getIcon() == asientoDisponible && (reservaLogica.getReservados().size() < Integer.parseInt(numAsientosReserva)) && reservaLogica.puedeComprarAsientos()) {
                             boton.setIcon(asientoSeleccionado);
                             reservaLogica.agregarAsiento(boton);
-                            reservaComunicacion.enviarPrematuramente((JButton)e.getSource(),idUnico);
+                            reservaComunicacion.enviarPrematuramente((JButton)e.getSource(), idUnico);
                         } else if (boton.getIcon() == asientoSeleccionado) {
                             boton.setIcon(asientoDisponible);
                             reservaLogica.quitarAsiento(boton);
-                            reservaComunicacion.eliminarPrematuramente((JButton)e.getSource(),idUnico);
+                            reservaComunicacion.eliminarPrematuramente((JButton)e.getSource(), idUnico);
                         }
-                        // Habilitar el boton si hay asientos seleccionados
+                        // Habilitar el botón si hay asientos seleccionados
                         reservaLogica.habilitarCompra(btnConfirmarAsientos, Integer.parseInt(numAsientosReserva));
                     }
                 });
@@ -132,29 +135,29 @@ public class ReservaAsientosCine {
             }
         }
 
-        // Para añadir el numero de las filas
+        // Añadir el número de las filas
         JPanel panelFilas = new JPanel(new GridLayout(Filas, 1));
         for (int i = 0; i < Filas; i++) {
             panelFilas.add(new JLabel("Fila " + (i + 1)));
         }
-// añade al panel de los asientos(que engloba tanto los asientos como las filas), los asientos y las filas numeradas
+
         panelAsientos.add(panelFilas, BorderLayout.WEST);
         panelAsientos.add(panelCentral, BorderLayout.CENTER);
-
 
         boolean conectado = reservaComunicacion.conectar("localhost", 55555);
         if (!conectado) {
             JOptionPane.showMessageDialog(sala, "Error de conexión al servidor");
             return;
         }
-        //pedimos los asientos disponibles despues de cargar todos.
+
+        // Pedir los asientos ocupados después de cargar todos
         int n = reservaComunicacion.pedirAsientos(clave, asientos, asientoOcupado);
         if (Integer.parseInt(numAsientosReserva) > ((Filas * Columnas)) - n) {
             JOptionPane.showMessageDialog(sala, "Superas el número de entradas disponibles");
-          return;
+            return;
         }
 
-        //boton para regresar a la pantalla anterior
+        // Botón para regresar a la pantalla anterior
         JButton btnCerrar = new JButton("Regresar");
         btnCerrar.addActionListener(new ActionListener() {
             @Override
@@ -171,7 +174,7 @@ public class ReservaAsientosCine {
             }
         });
 
-        // boton de confirmar asientos (siempre visible, pero habilitado dependiendo de los asientos seleccionados)
+        // Botón de confirmar asientos (siempre visible, pero habilitado dependiendo de los asientos seleccionados)
         btnConfirmarAsientos = new JButton("Comprar");
         btnConfirmarAsientos.setEnabled(false);
         btnConfirmarAsientos.addActionListener(new ActionListener() {
@@ -191,7 +194,12 @@ public class ReservaAsientosCine {
                         btnConfirmarAsientos.setEnabled(false);
                         reservaLogica.bloquearCompra();
                     } else {
-                        mensaje = "Error: Algunos asientos ya están reservados, puede elegir otros";
+                        mensaje = "Error: Algunos asientos ya están reservados";
+                        JOptionPane.showMessageDialog(sala, mensaje);
+                        sala.dispose();
+                        principal.setVisible(true);
+                        JOptionPane.showMessageDialog(sala, "vuelve a iniciar sesion para coger asientos");
+                     return;
                     }
                     JOptionPane.showMessageDialog(sala, mensaje);
                 } else {
@@ -212,6 +220,7 @@ public class ReservaAsientosCine {
         sala.setVisible(true);
         principal.setVisible(false);
     }
+
 
     public static void main(String[] args) {
         ReservaAsientosCine reserva = new ReservaAsientosCine();

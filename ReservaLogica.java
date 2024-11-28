@@ -28,6 +28,9 @@ public class ReservaLogica {
     public boolean puedeComprarAsientos(){
         return puedeComprar;
     }
+    public void setPuedeComprar(boolean b){
+        this.puedeComprar=b;
+    }
 
     public void limpiarReservas() {
         reservados.clear();

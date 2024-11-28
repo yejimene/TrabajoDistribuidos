@@ -5,60 +5,82 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Procesar implements Runnable {
     private Socket s;
-    private static Vector<String> asientosPrematuros = new Vector<>();
+    private static ConcurrentHashMap<Integer, Vector<String>> asientosUsuarios = new ConcurrentHashMap<>();
     private int idUsuario;
-    private static ConcurrentHashMap<Integer,Vector<String>> asientosUsuario= new  ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<>();
     private String clave;
+
     public Procesar(Socket s) {
-        this.s= s;
+        this.s = s;
     }
+
     public void run() {
-        BufferedWriter out=null;
-        BufferedReader in=null;
-        try{
-            out =new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8"));
-            in =new BufferedReader(new InputStreamReader(s.getInputStream(),"UTF-8"));
+        BufferedWriter out = null;
+        BufferedReader in = null;
+        try {
+            out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), "UTF-8"));
+            in = new BufferedReader(new InputStreamReader(s.getInputStream(), "UTF-8"));
             String id;
-            clave= in.readLine();
+            clave = in.readLine();
             System.out.println(clave);
-            enviarAsientosOcupados(clave,out);
+            enviarAsientosOcupados(clave, out);
             id = in.readLine();
             System.out.println(id);
-            while(id!=null &&!id.equals("Comprar")) {
+            while (id != null && !id.equals("Comprar")) {
                 System.out.println(id);
-                idUsuario=Integer.parseInt(id);
-                id=in.readLine();
-                if(id.equals("ELIMINAR")){
-                    id=in.readLine();
+                idUsuario = Integer.parseInt(id);
+                id = in.readLine();
+                if (id.equals("ELIMINAR")) {
+                    id = in.readLine();
                     System.out.println(id);
-                        asientosPrematuros.remove(id);
-                        asientosUsuario.put(idUsuario,asientosPrematuros);
-                        System.out.println(asientosPrematuros.size());
-                }else {
-
-                    System.out.println(id);
-                    if (!asientosPrematuros.contains(id)) {
-                        asientosPrematuros.add(id);
+                    if (!algunoContiene(id)) {
+                        asientosUsuarios.get(idUsuario).remove(id);
                     }
-                    asientosUsuario.put(idUsuario,asientosPrematuros);
-                    System.out.println(asientosPrematuros.size());
+                    System.out.println(asientosUsuarios.size());
+                } else {
+                    System.out.println(id);
+                    if (!algunoContiene(id)) {
+                        asientosUsuarios.computeIfAbsent(idUsuario, k -> new Vector<>()).add(id);
+                    }
+                    System.out.println(asientosUsuarios.size());
                 }
 
-                id= in.readLine();
+                id = in.readLine();
             }
-            if(comprar(asientosUsuario,idUsuario)){
-                System.out.println("true");
-                out.write("true\n");
-                out.flush();
-            }else {
-                System.out.println("false");
-                out.write("false\n");
-                out.flush();
+
+            // Lógica de compra con posibilidad de elegir nuevos asientos
+            boolean compraExitosa = false;
+            while (!compraExitosa) {
+                if (id != null && comprar(idUsuario)) {
+                    System.out.println("Compra exitosa");
+                    out.write("true\n");
+                    out.flush();
+                    compraExitosa = true;  // Salir del bucle si la compra es exitosa
+                } else {
+                    // Si la compra no fue exitosa, eliminamos los asientos seleccionados y permitimos elegir nuevos
+                    asientosUsuarios.remove(idUsuario);
+                    out.write("false\n");
+                    out.flush();
+                    System.out.println("Compra fallida. Selecciona nuevos asientos.");
+                    // Enviar los asientos ocupados nuevamente para que el usuario pueda elegir otros
+                    enviarAsientosOcupados(clave, out);
+
+                    // Pedir al usuario que seleccione nuevos asientos
+                    id = in.readLine();  // Nuevamente leer la siguiente acción del cliente (selección de asientos)
+                    if (id == null || id.equals("CANCELAR")) {
+                        // Si el usuario decide cancelar la compra, salimos del bucle sin reiniciar todo
+                        System.out.println("El usuario ha cancelado la compra.");
+                        break;
+                    } else {
+                        // Si no es "CANCELAR", proceder con la nueva selección de asientos
+                        idUsuario = Integer.parseInt(id); // Actualizar el ID del usuario si es necesario
+                    }
+                }
             }
-        }catch(IOException e){
+
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             cerrarTodo(out, in, s);
         }
     }
@@ -88,39 +110,58 @@ public class Procesar implements Runnable {
         }
     }
 
-    public boolean comprar(ConcurrentHashMap<Integer,Vector<String>> mapa,int num) {
-        synchronized (Cine) {
-            if(mapa.get(num).isEmpty()){
+    public boolean algunoContiene(String id) {
+        for (Vector<String> asientos : asientosUsuarios.values()) {
+            if (asientos.contains(id)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public boolean comprar(int num) {
+        synchronized (Cine) {
+            // Verifica si el usuario tiene asientos
+            if (asientosUsuarios.get(num) == null || asientosUsuarios.get(num).isEmpty()) {
+                return false;  // No tiene asientos seleccionados
+            }
+
             Vector<String> vector = Cine.get(clave);
-            for (String linea : vector) {
-                for (String s1 : mapa.get(num)) {
-                    if (linea.equals(s1)) {
-                        return false;
-                    }
+            boolean compraValida = true;
+
+            // Verifica si alguno de los asientos ya está ocupado
+            for (String s1 : asientosUsuarios.get(num)) {
+                if (vector.contains(s1)) {
+                    compraValida = false;
+                    break;
                 }
             }
-            for (String s1 :  mapa.get(num)) {
-                vector.add(s1);
 
+            // Si todos los asientos están libres, agregarlos al Cine
+            if (compraValida) {
+                for (String s1 : asientosUsuarios.get(num)) {
+                    vector.add(s1);
+                }
             }
-            return true;
+
+            return compraValida;
         }
     }
+
     public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
         Cine.putIfAbsent(clave, new Vector<>());
-        if(Cine.get(clave).isEmpty() && asientosPrematuros.isEmpty()) {
+        if (Cine.get(clave).isEmpty() && asientosUsuarios.isEmpty()) {
             System.out.println();
-            out.write("NADA"+"\n");
+            out.write("NADA" + "\n");
             out.flush();
-        }else {
-            for(String s : Cine.get(clave)) {
-                out.write(s+"\n");
+        } else {
+            for (String s : Cine.get(clave)) {
+                out.write(s + "\n");
             }
-            for(String s: asientosPrematuros){
-                System.out.println(s);
-                out.write(s+"\n");
+            for (Vector<String> asientos : asientosUsuarios.values()) {
+                for (String s : asientos) {
+                    out.write(s + "\n");
+                }
             }
             out.write("FIN\n");
             out.flush();
