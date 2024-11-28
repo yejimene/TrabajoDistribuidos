@@ -62,7 +62,9 @@ public class Procesar implements Runnable {
                 asientosUsuarios.putIfAbsent(usuario, new ConcurrentHashMap<>());
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
                 peliculas.putIfAbsent(clave, new Vector<>());
-                peliculas.get(clave).add(idAsiento);
+                if (!peliculas.get(clave).contains(idAsiento)) {
+                    peliculas.get(clave).add(idAsiento);
+                }
             } else {
                 puedeComprar = false;
             }
