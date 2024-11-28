@@ -33,7 +33,7 @@ public class Procesar implements Runnable {
                 if (id.equals("ELIMINAR")) {
                     id = in.readLine();
                     System.out.println(id);
-                    if (!algunoContiene(id)) {
+                    if (!algunoContiene(id) && !asientosUsuarios.get(idUsuario).isEmpty()) {
                         asientosUsuarios.get(idUsuario).remove(id);
                     }
                     System.out.println(asientosUsuarios.get(idUsuario).size());
@@ -45,7 +45,6 @@ public class Procesar implements Runnable {
                         }
                         asientosUsuarios.get(idUsuario).add(id);
                     }
-                    System.out.println(asientosUsuarios.get(idUsuario).size());
                 }
 
                 id = in.readLine();
