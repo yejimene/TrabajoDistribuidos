@@ -34,12 +34,14 @@ public class Procesar implements Runnable {
                     id = in.readLine();
                     System.out.println(id);
                     if (!algunoContiene(id)) {
+
                         asientosUsuarios.get(idUsuario).remove(id);
                     }
                     System.out.println(asientosUsuarios.size());
                 } else {
                     System.out.println(id);
                     if (!algunoContiene(id)) {
+
                         asientosUsuarios.computeIfAbsent(idUsuario, k -> new Vector<>()).add(id);
                     }
                     System.out.println(asientosUsuarios.size());
@@ -48,36 +50,16 @@ public class Procesar implements Runnable {
                 id = in.readLine();
             }
 
-            // Lógica de compra con posibilidad de elegir nuevos asientos
-            boolean compraExitosa = false;
-            while (!compraExitosa) {
-                if (id != null && comprar(idUsuario)) {
-                    System.out.println("Compra exitosa");
-                    out.write("true\n");
-                    out.flush();
-                    compraExitosa = true;  // Salir del bucle si la compra es exitosa
-                } else {
-                    // Si la compra no fue exitosa, eliminamos los asientos seleccionados y permitimos elegir nuevos
-                    asientosUsuarios.remove(idUsuario);
-                    out.write("false\n");
-                    out.flush();
-                    System.out.println("Compra fallida. Selecciona nuevos asientos.");
-                    // Enviar los asientos ocupados nuevamente para que el usuario pueda elegir otros
-                    enviarAsientosOcupados(clave, out);
-
-                    // Pedir al usuario que seleccione nuevos asientos
-                    id = in.readLine();  // Nuevamente leer la siguiente acción del cliente (selección de asientos)
-                    if (id == null || id.equals("CANCELAR")) {
-                        // Si el usuario decide cancelar la compra, salimos del bucle sin reiniciar todo
-                        System.out.println("El usuario ha cancelado la compra.");
-                        break;
-                    } else {
-                        // Si no es "CANCELAR", proceder con la nueva selección de asientos
-                        idUsuario = Integer.parseInt(id); // Actualizar el ID del usuario si es necesario
-                    }
-                }
+            if (id != null && comprar(idUsuario)) {
+                System.out.println("true");
+                out.write("true\n");
+                out.flush();
+            } else {
+                asientosUsuarios.remove(idUsuario);
+                System.out.println("false");
+                out.write("false\n");
+                out.flush();
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -111,6 +93,7 @@ public class Procesar implements Runnable {
     }
 
     public boolean algunoContiene(String id) {
+
         for (Vector<String> asientos : asientosUsuarios.values()) {
             if (asientos.contains(id)) {
                 return true;
@@ -121,15 +104,15 @@ public class Procesar implements Runnable {
 
     public boolean comprar(int num) {
         synchronized (Cine) {
-            // Verifica si el usuario tiene asientos
+
             if (asientosUsuarios.get(num) == null || asientosUsuarios.get(num).isEmpty()) {
-                return false;  // No tiene asientos seleccionados
+                return false;
             }
 
             Vector<String> vector = Cine.get(clave);
             boolean compraValida = true;
 
-            // Verifica si alguno de los asientos ya está ocupado
+
             for (String s1 : asientosUsuarios.get(num)) {
                 if (vector.contains(s1)) {
                     compraValida = false;
@@ -137,7 +120,6 @@ public class Procesar implements Runnable {
                 }
             }
 
-            // Si todos los asientos están libres, agregarlos al Cine
             if (compraValida) {
                 for (String s1 : asientosUsuarios.get(num)) {
                     vector.add(s1);
