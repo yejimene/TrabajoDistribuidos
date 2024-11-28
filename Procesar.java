@@ -34,17 +34,18 @@ public class Procesar implements Runnable {
                     id = in.readLine();
                     System.out.println(id);
                     if (!algunoContiene(id)) {
-
                         asientosUsuarios.get(idUsuario).remove(id);
                     }
-                    System.out.println(asientosUsuarios.size());
+                    System.out.println(asientosUsuarios.get(idUsuario).size());
                 } else {
                     System.out.println(id);
                     if (!algunoContiene(id)) {
-
-                        asientosUsuarios.computeIfAbsent(idUsuario, k -> new Vector<>()).add(id);
+                        if (!asientosUsuarios.containsKey(idUsuario)) {
+                            asientosUsuarios.put(idUsuario, new Vector<>());
+                        }
+                        asientosUsuarios.get(idUsuario).add(id);
                     }
-                    System.out.println(asientosUsuarios.size());
+                    System.out.println(asientosUsuarios.get(idUsuario).size());
                 }
 
                 id = in.readLine();
@@ -94,17 +95,22 @@ public class Procesar implements Runnable {
 
     public boolean algunoContiene(String id) {
 
-        for (Vector<String> asientos : asientosUsuarios.values()) {
-            if (asientos.contains(id)) {
-                return true;
+        for (Integer usuario : asientosUsuarios.keySet()) {
+
+            if (usuario != idUsuario) {
+                Vector<String> asientos = asientosUsuarios.get(usuario);
+                if (asientos.contains(id)) {
+                    return true;
+                }
             }
         }
-        return false;
+        return false;  // Si no se encuentra el asiento ocupado por otro usuario, retornamos false
     }
+
 
     public boolean comprar(int num) {
         synchronized (Cine) {
-
+            // Verifica si el usuario tiene asientos reservados
             if (asientosUsuarios.get(num) == null || asientosUsuarios.get(num).isEmpty()) {
                 return false;
             }
@@ -112,7 +118,7 @@ public class Procesar implements Runnable {
             Vector<String> vector = Cine.get(clave);
             boolean compraValida = true;
 
-
+            // Verifica si alguno de los asientos reservados ya está ocupado en el cine
             for (String s1 : asientosUsuarios.get(num)) {
                 if (vector.contains(s1)) {
                     compraValida = false;
@@ -121,6 +127,7 @@ public class Procesar implements Runnable {
             }
 
             if (compraValida) {
+                // Si la compra es válida, actualiza los asientos ocupados
                 for (String s1 : asientosUsuarios.get(num)) {
                     vector.add(s1);
                 }
@@ -133,13 +140,14 @@ public class Procesar implements Runnable {
     public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
         Cine.putIfAbsent(clave, new Vector<>());
         if (Cine.get(clave).isEmpty() && asientosUsuarios.isEmpty()) {
-            System.out.println();
             out.write("NADA" + "\n");
             out.flush();
         } else {
+            // Enviar los asientos ocupados por el cine
             for (String s : Cine.get(clave)) {
                 out.write(s + "\n");
             }
+            // Enviar los asientos ocupados por los usuarios
             for (Vector<String> asientos : asientosUsuarios.values()) {
                 for (String s : asientos) {
                     out.write(s + "\n");
