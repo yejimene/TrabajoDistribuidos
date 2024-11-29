@@ -46,12 +46,15 @@ public class ReservaAsientosCine {
             @Override
             public void actionPerformed(ActionEvent e) {
                 CompraEntradas compraEntradas = new CompraEntradas();
+                principal.setVisible(false);
                 compraEntradas.addWindowListener(new WindowAdapter() {
                     @Override
                     public void windowClosed(WindowEvent e) {
                         idUnico = compraEntradas.getIdUnico();
                         if (idUnico != null) {
                             mostrarSala();
+                        }else {
+                            principal.setVisible(true);
                         }
                     }
                 });
@@ -81,6 +84,12 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
+        boolean idAceptada = reservaComunicacion.conectar("localhost", 55555, idUnico);
+        if (!idAceptada) {
+            JOptionPane.showMessageDialog(principal, "No se puede iniciar sesión con la misma ID en dos lugares.");
+            errorCerrar();
+            return;
+        }
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
@@ -154,12 +163,6 @@ public class ReservaAsientosCine {
 
         panelAsientos.add(panelFilas, BorderLayout.WEST);
         panelAsientos.add(panelCentral, BorderLayout.CENTER);
-
-        boolean conectado = reservaComunicacion.conectar("localhost", 55555);
-        if (!conectado) {
-            JOptionPane.showMessageDialog(sala, "Error de conexión al servidor");
-            return;
-        }
 
         // Pedir los asientos ocupados después de cargar todos
         int n = reservaComunicacion.pedirAsientos(clave, asientos, asientoOcupado);

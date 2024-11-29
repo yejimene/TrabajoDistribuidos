@@ -9,12 +9,16 @@ public class ReservaComunicacion {
     private BufferedReader in;
     private BufferedWriter out;
 
-    public boolean conectar(String host, int puerto) {
+    public boolean conectar(String host, int puerto,String id) {
         try {
             socket = new Socket(host, puerto);
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-            return true;
+            out.write(id+"\n");
+            out.flush();
+            String linea=in.readLine();
+            System.out.println(linea);
+            return linea.equals("si");
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -77,7 +81,6 @@ public class ReservaComunicacion {
     }
     public void enviarPrematuramente(JButton boton,String id){
         try {
-            out.write(id+"\n");
             out.write(boton.getText()+"\n");
             out.flush();
         } catch (IOException e) {
@@ -86,7 +89,6 @@ public class ReservaComunicacion {
     }
     public void eliminarPrematuramente(JButton boton,String id){
         try {
-            out.write(id+"\n");
             out.write("ELIMINAR\n");
             out.write(boton.getText() + "\n");
             out.flush();
