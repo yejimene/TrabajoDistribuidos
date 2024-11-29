@@ -81,21 +81,30 @@ public class Procesar implements Runnable {
 
     public void deseleccionarAsiento(String idAsiento, String usuario) {
         synchronized (asientosUsuarios) {
-            if (!algunoContiene(idAsiento)) {
-                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                if (peliculas != null && peliculas.containsKey(clave)) {
-                    Vector<String> asientosUsuario = peliculas.get(clave);
+            if (Cine.containsKey(clave) && Cine.get(clave).contains(idAsiento)) {
+                System.out.println("El asiento " + idAsiento + " ya está comprado. No se puede deseleccionar.");
+                return;
+            }
+
+            Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+            if (peliculas != null && peliculas.containsKey(clave)) {
+                Vector<String> asientosUsuario = peliculas.get(clave);
+
+                if (asientosUsuario != null) {
                     asientosUsuario.remove(idAsiento);
                     if (asientosUsuario.isEmpty()) {
                         peliculas.remove(clave);
                     }
-                    puedeComprar = true;
                 }
-            } else {
-                puedeComprar = false;
+
+                if (peliculas.isEmpty()) {
+                    asientosUsuarios.remove(usuario);
+                }
+                puedeComprar = true;
             }
         }
     }
+
 
     public boolean validarYComprar(String usuario, ArrayList<String> asientosDeseados) {
         synchronized (Cine) {
@@ -117,6 +126,9 @@ public class Procesar implements Runnable {
                 if (asientosReservados.isEmpty()) {
                     peliculas.remove(clave);
                 }
+                if (peliculas.isEmpty()) {
+                    asientosUsuarios.remove(usuario);
+                }
 
                 return true;
             }
@@ -128,18 +140,28 @@ public class Procesar implements Runnable {
     public void cancelarSeleccion(String usuario) {
         synchronized (asientosUsuarios) {
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-            if (peliculas != null && peliculas.containsKey(clave)) {
-                Vector<String> asientosUsuario = peliculas.get(clave);
+            if (peliculas != null) {
+                if (peliculas.containsKey(clave)) {
+                    Vector<String> asientosUsuario = peliculas.get(clave);
 
-                ArrayList<String> asientosAEliminar = new ArrayList<>();
+                    if (asientosUsuario != null) {
+                        ArrayList<String> asientosAEliminar = new ArrayList<>();
 
-                for (String asiento : asientosUsuario) {
-                    if (!(Cine.containsKey(clave) && Cine.get(clave).contains(asiento))) {
-                        asientosAEliminar.add(asiento);
+                        for (String asiento : asientosUsuario) {
+                            if (!(Cine.containsKey(clave) && Cine.get(clave).contains(asiento))) {
+                                asientosAEliminar.add(asiento);
+                            }
+                        }
+
+                        asientosUsuario.removeAll(asientosAEliminar);
+
+                        if (asientosUsuario.isEmpty()) {
+                            peliculas.remove(clave);
+                        }
                     }
                 }
-                if (asientosUsuario.isEmpty()) {
-                    peliculas.remove(clave);
+                if (peliculas.isEmpty()) {
+                    asientosUsuarios.remove(usuario);
                 }
             }
         }

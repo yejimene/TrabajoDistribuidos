@@ -24,7 +24,7 @@ public class ReservaAsientosCine {
     private ReservaLogica reservaLogica = new ReservaLogica();
     private ReservaComunicacion reservaComunicacion = new ReservaComunicacion();
 
-    public ReservaAsientosCine(String id) {
+    public ReservaAsientosCine() {
         principal.setTitle("Reserva Asientos Cine ");
         principal.setSize(400, 200);
         principal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -42,7 +42,6 @@ public class ReservaAsientosCine {
         String[] cantidadAsientos = {"1", "2", "3","4","5", "10"};
         comboAsientos = new JComboBox<>(cantidadAsientos);
         JButton btnConfirmarSeleccion = new JButton("Confirmar");
-        idUnico = id;
         btnConfirmarSeleccion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -235,15 +234,7 @@ public class ReservaAsientosCine {
 
 
     public static void main(String[] args) {
-        CompraEntradas compraEntradas = new CompraEntradas();
-        while (compraEntradas.getIdUnico() == null) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        SwingUtilities.invokeLater(() -> new ReservaAsientosCine(compraEntradas.getIdUnico()));
+        ReservaAsientosCine r= new ReservaAsientosCine();
     }
 
     private ImageIcon redimensionarIcono(ImageIcon icono, int ancho, int alto) {
