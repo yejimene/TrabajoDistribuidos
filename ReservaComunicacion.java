@@ -64,7 +64,7 @@ public class ReservaComunicacion {
             e.printStackTrace();
         }
     }
-    public void enviarPrematuramente(JButton boton,int id){
+    public void enviarPrematuramente(JButton boton,String id){
         try {
             out.write(id+"\n");
             out.write(boton.getText()+"\n");
@@ -73,7 +73,7 @@ public class ReservaComunicacion {
             e.printStackTrace();
         }
     }
-    public void eliminarPrematuramente(JButton boton,int id){
+    public void eliminarPrematuramente(JButton boton,String id){
         try {
             out.write(id+"\n");
             out.write("ELIMINAR\n");
