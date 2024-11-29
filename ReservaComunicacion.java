@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -54,8 +55,18 @@ public class ReservaComunicacion {
             return false;
         }
     }
+    public void cerrarConexionAntes() {
+        try {
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (socket != null && !socket.isClosed()) socket.shutdownOutput();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-    public void cerrarConexion() {
+
+        public void cerrarConexion() {
         try {
             if (out != null) out.close();
             if (in != null) in.close();
@@ -64,7 +75,7 @@ public class ReservaComunicacion {
             e.printStackTrace();
         }
     }
-    public void enviarPrematuramente(JButton boton,int id){
+    public void enviarPrematuramente(JButton boton,String id){
         try {
             out.write(id+"\n");
             out.write(boton.getText()+"\n");
@@ -73,7 +84,7 @@ public class ReservaComunicacion {
             e.printStackTrace();
         }
     }
-    public void eliminarPrematuramente(JButton boton,int id){
+    public void eliminarPrematuramente(JButton boton,String id){
         try {
             out.write(id+"\n");
             out.write("ELIMINAR\n");

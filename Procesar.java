@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -7,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Procesar implements Runnable {
     private Socket s;
-    private static ConcurrentHashMap<Integer, Map<String, Vector<String>>> asientosUsuarios = new ConcurrentHashMap<>();
-    private int idUsuario;
+    private static ConcurrentHashMap<String, Map<String, Vector<String>>> asientosUsuarios = new ConcurrentHashMap<>();
+    private String idUsuario;
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<>();
     private boolean puedeComprar = true;
     private String clave;
@@ -29,7 +30,7 @@ public class Procesar implements Runnable {
             id = in.readLine();
 
             while (id != null && !id.equals("Comprar")) {
-                idUsuario = Integer.parseInt(id); // Identificar al usuario
+                idUsuario = id; // Identificar al usuario
                 id = in.readLine();
 
                 if (id.equals("ELIMINAR")) {
@@ -61,7 +62,7 @@ public class Procesar implements Runnable {
         }
     }
 
-    public void seleccionarAsiento(String idAsiento, int usuario) {
+    public void seleccionarAsiento(String idAsiento, String usuario) {
         synchronized (asientosUsuarios) {
             if (!algunoContiene(idAsiento) && puedeComprar) {
                 asientosUsuarios.putIfAbsent(usuario, new ConcurrentHashMap<>());
@@ -77,7 +78,7 @@ public class Procesar implements Runnable {
     }
 
 
-    public void deseleccionarAsiento(String idAsiento, int usuario) {
+    public void deseleccionarAsiento(String idAsiento, String usuario) {
         synchronized (asientosUsuarios) {
             if (!algunoContiene(idAsiento)) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
@@ -95,7 +96,7 @@ public class Procesar implements Runnable {
         }
     }
 
-    public boolean validarYComprar(int usuario, ArrayList<String> asientosDeseados) {
+    public boolean validarYComprar(String usuario, ArrayList<String> asientosDeseados) {
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
@@ -123,7 +124,7 @@ public class Procesar implements Runnable {
 
 
 
-    public void cancelarSeleccion(int usuario) {
+    public void cancelarSeleccion(String usuario) {
         synchronized (asientosUsuarios) {
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
             if (peliculas != null && peliculas.containsKey(clave)) {
@@ -147,7 +148,7 @@ public class Procesar implements Runnable {
 
     public boolean algunoContiene(String idAsiento) {
         synchronized (asientosUsuarios) {
-            for (int usuario : asientosUsuarios.keySet()) {
+            for (String usuario : asientosUsuarios.keySet()) {
                 if (usuario != idUsuario) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
                     if (peliculas != null && peliculas.containsKey(clave) && peliculas.get(clave).contains(idAsiento)) {
@@ -182,7 +183,7 @@ public class Procesar implements Runnable {
 
 
     public void mostrarAsientosReservados() {
-        for (Integer usuario : asientosUsuarios.keySet()) {
+        for (String usuario : asientosUsuarios.keySet()) {
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
             if (peliculas != null && !peliculas.isEmpty()) {
                 for (String clave : peliculas.keySet()) {

@@ -1,3 +1,4 @@
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -5,7 +6,7 @@ import java.util.Scanner;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
-    private int idUnico=0;
+    private String idUnico=null;
     private JComboBox<String> comboPeliculas;
     private JComboBox<String> comboHoras;
     private JComboBox<String> comboAsientos;
@@ -69,10 +70,8 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
-        System.out.println("Escribe tu dni: ");
-        Scanner sc= new Scanner(System.in);
-        idUnico =  sc.nextInt();
-        System.out.println(idUnico);
+            CompraEntradas compraEntradas = new CompraEntradas();
+            idUnico = compraEntradas.getIdUnico();
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
@@ -199,9 +198,10 @@ public class ReservaAsientosCine {
                     } else {
                         mensaje = "Error: Algunos asientos ya están reservados";
                         JOptionPane.showMessageDialog(sala, mensaje);
-                        btnCerrar.doClick();
+                        sala.dispose();
+                        errorCerrar();
                         JOptionPane.showMessageDialog(sala, "vuelve a iniciar sesion para coger asientos");
-                     return;
+                        return;
                     }
                     JOptionPane.showMessageDialog(sala, mensaje);
                 } else {
@@ -236,6 +236,18 @@ public class ReservaAsientosCine {
 
     private void liberarRecursos() {
         reservaLogica.limpiarReservas();
+        reservaComunicacion.cerrarConexionAntes();
+    }
+    private void errorCerrar(){
+        principal.setVisible(true);
+        for (JButton boton : reservaLogica.getReservados()) {
+            if (boton.getIcon() == asientoSeleccionado) {
+                System.out.println(boton.getText());
+                reservaComunicacion.eliminarPrematuramente(boton, idUnico);
+            }
+        }
+        reservaLogica.limpiarReservas();
         reservaComunicacion.cerrarConexion();
     }
+
 }
