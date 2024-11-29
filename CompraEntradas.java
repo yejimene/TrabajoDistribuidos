@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
         setTitle("Introducir Datos de Compra");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
         setLayout(new GridLayout(5, 2, 10, 10));
 
         JLabel dniLabel = new JLabel("Introduce tu DNI:");

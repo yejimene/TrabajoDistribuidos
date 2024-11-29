@@ -34,7 +34,8 @@ public class Procesar implements Runnable {
                 id = in.readLine();
 
                 if (id.equals("ELIMINAR")) {
-                    id = in.readLine(); // Asiento a eliminar
+                    id = in.readLine();
+                    System.out.println(id);// Asiento a eliminar
                     deseleccionarAsiento(id, idUsuario);
                 } else {
                     seleccionarAsiento(id, idUsuario);
@@ -149,7 +150,7 @@ public class Procesar implements Runnable {
     public boolean algunoContiene(String idAsiento) {
         synchronized (asientosUsuarios) {
             for (String usuario : asientosUsuarios.keySet()) {
-                if (usuario != idUsuario) {
+                if (!usuario.equals( idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
                     if (peliculas != null && peliculas.containsKey(clave) && peliculas.get(clave).contains(idAsiento)) {
                         return true;

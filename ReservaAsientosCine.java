@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
-    private String idUnico=null;
+    private String idUnico;
     private JComboBox<String> comboPeliculas;
     private JComboBox<String> comboHoras;
     private JComboBox<String> comboAsientos;
@@ -43,7 +43,16 @@ public class ReservaAsientosCine {
         btnConfirmarSeleccion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mostrarSala();
+                CompraEntradas compraEntradas = new CompraEntradas();
+                compraEntradas.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        idUnico = compraEntradas.getIdUnico();
+                        if (idUnico != null) {
+                            mostrarSala();
+                        }
+                    }
+                });
             }
         });
         JLabel precioTotal = new JLabel("Precio total: €0");
@@ -70,8 +79,6 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
-            CompraEntradas compraEntradas = new CompraEntradas();
-            idUnico = compraEntradas.getIdUnico();
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
