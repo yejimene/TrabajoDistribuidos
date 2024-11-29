@@ -10,7 +10,7 @@ public class CompraEntradas extends JFrame {
 
     private String idUnico;
 
-    public CompraEntradas(CyclicBarrier barrier) {
+    public CompraEntradas() {
         setTitle("Introducir Datos de Compra");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -39,13 +39,6 @@ public class CompraEntradas extends JFrame {
                     System.out.println("DNI ingresado (idUnico): " + idUnico);
                     System.out.println("Correo ingresado: " + correo);
                     dispose();
-                    try {
-                        barrier.await();
-                    } catch (BrokenBarrierException ex) {
-                        ex.printStackTrace();
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
                 } else {
                     if(dni.isEmpty()){
                     JOptionPane.showMessageDialog(CompraEntradas.this, "Por favor, introduce un DNI.", "Error", JOptionPane.ERROR_MESSAGE);

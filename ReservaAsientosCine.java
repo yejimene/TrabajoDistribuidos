@@ -226,18 +226,15 @@ public class ReservaAsientosCine {
 
 
     public static void main(String[] args) {
-        CyclicBarrier barrier = new CyclicBarrier(2);
-        CompraEntradas compraEntradas = new CompraEntradas(barrier);
-        new Thread(() -> {
+        CompraEntradas compraEntradas = new CompraEntradas();
+        while (compraEntradas.getIdUnico() == null) {
             try {
-                barrier.await();
-            } catch (BrokenBarrierException e) {
-                e.printStackTrace();
+                Thread.sleep(100);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
-            SwingUtilities.invokeLater(() -> new ReservaAsientosCine(compraEntradas.getIdUnico()));
-        }).start();
+        }
+        SwingUtilities.invokeLater(() -> new ReservaAsientosCine(compraEntradas.getIdUnico()));
     }
 
     private ImageIcon redimensionarIcono(ImageIcon icono, int ancho, int alto) {
