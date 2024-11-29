@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
-    private int idUnico=0;
+    private String idUnico;
     private JComboBox<String> comboPeliculas;
     private JComboBox<String> comboHoras;
     private JComboBox<String> comboAsientos;
@@ -69,10 +69,8 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
-        System.out.println("Escribe tu dni: ");
-        Scanner sc= new Scanner(System.in);
-        idUnico =  sc.nextInt();
-        System.out.println(idUnico);
+        CompraEntradas compraEntradas = new CompraEntradas();
+        idUnico = compraEntradas.getIdUnico();
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
