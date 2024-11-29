@@ -3,6 +3,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Scanner;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
@@ -22,7 +24,7 @@ public class ReservaAsientosCine {
     private ReservaLogica reservaLogica = new ReservaLogica();
     private ReservaComunicacion reservaComunicacion = new ReservaComunicacion();
 
-    public ReservaAsientosCine() {
+    public ReservaAsientosCine(String id) {
         principal.setTitle("Reserva Asientos Cine ");
         principal.setSize(400, 200);
         principal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,6 +42,7 @@ public class ReservaAsientosCine {
         String[] cantidadAsientos = {"1", "2", "3","4","5", "10"};
         comboAsientos = new JComboBox<>(cantidadAsientos);
         JButton btnConfirmarSeleccion = new JButton("Confirmar");
+        idUnico = id;
         btnConfirmarSeleccion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -70,8 +73,6 @@ public class ReservaAsientosCine {
     }
 
     private void mostrarSala() {
-            CompraEntradas compraEntradas = new CompraEntradas();
-            idUnico = compraEntradas.getIdUnico();
         String pelicula = (String) comboPeliculas.getSelectedItem();
         String hora = (String) comboHoras.getSelectedItem();
         numAsientosReserva = (String) comboAsientos.getSelectedItem();
@@ -225,7 +226,18 @@ public class ReservaAsientosCine {
 
 
     public static void main(String[] args) {
-        ReservaAsientosCine reserva = new ReservaAsientosCine();
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        CompraEntradas compraEntradas = new CompraEntradas(barrier);
+        new Thread(() -> {
+            try {
+                barrier.await();
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            SwingUtilities.invokeLater(() -> new ReservaAsientosCine(compraEntradas.getIdUnico()));
+        }).start();
     }
 
     private ImageIcon redimensionarIcono(ImageIcon icono, int ancho, int alto) {
