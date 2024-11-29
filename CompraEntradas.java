@@ -2,9 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 
-    public class CompraEntradas extends JFrame {
+public class CompraEntradas extends JFrame {
 
     private String idUnico;
 
@@ -39,7 +41,16 @@ import java.awt.event.ActionListener;
                     System.out.println("Correo ingresado: " + correo);
                     dispose();
                 } else {
-                    JOptionPane.showMessageDialog(CompraEntradas.this, "Por favor, introduce un DNI válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                    if(dni.isEmpty()){
+                    JOptionPane.showMessageDialog(CompraEntradas.this, "Por favor, introduce un DNI.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }else {
+                        JOptionPane.showMessageDialog(
+                                CompraEntradas.this,
+                                "Formato incorrecto para el DNI.\nDebe tener 8 dígitos seguidos de una letra mayúscula.\nEjemplo: 12345678Z",
+                                "Error en el DNI",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    }
                 }
             }
         });
@@ -52,7 +63,7 @@ import java.awt.event.ActionListener;
     }
 
     private boolean verificarDNI(String dni) {
-        return dni.matches("\\d{8}[A-Za-z]");
+        return dni.matches("\\d{8}[A-Z]");
     }
 
 
