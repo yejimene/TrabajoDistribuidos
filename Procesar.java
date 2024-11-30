@@ -28,7 +28,7 @@ public class Procesar implements Runnable {
 
             idUsuario = in.readLine();
             synchronized (usuariosActivos) {
-                if (usuariosActivos.contains(idUsuario)) {;
+                if (usuariosActivos.contains(idUsuario)) {
                     out.write("no\n");
                     out.flush();
                     return;
@@ -69,14 +69,17 @@ public class Procesar implements Runnable {
                 out.flush();
 
             mostrarAsientosReservados();
-
-        } catch (IOException e) {
-            cancelarSeleccion(idUsuario);
-            e.printStackTrace();
-        } finally {
             synchronized (usuariosActivos) {
                 usuariosActivos.remove(idUsuario);
             }
+
+        } catch (IOException e) {
+            cancelarSeleccion(idUsuario);
+            synchronized (usuariosActivos) {
+                usuariosActivos.remove(idUsuario);
+            }
+            e.printStackTrace();
+        } finally {
             cerrarTodo(out, in, s);
         }
     }
