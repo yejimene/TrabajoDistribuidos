@@ -114,10 +114,8 @@ public class Procesar implements Runnable {
                 if (peliculas != null && peliculas.containsKey(clave)) {
                     Vector<String> asientosUsuario = peliculas.get(clave);
                    for(String linea: asientosUsuario){
-                       if(peliculas2!=null) {
                            if (!peliculas2.contains(linea)) {
                                asientosUsuario.remove(linea);
-                           }
                        }
                    }
 
@@ -132,10 +130,6 @@ public class Procesar implements Runnable {
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                if (!peliculas.containsKey(clave)) {
-                    return false;
-                }
-
                 Vector<String> asientosUsuario = peliculas.get(clave);
                 if (asientosUsuario.size() != asientosDeseados.size() || !asientosUsuario.containsAll(asientosDeseados)) {
                     return false;
@@ -159,7 +153,7 @@ public class Procesar implements Runnable {
             for (String usuario : asientosUsuarios.keySet()) {
                 if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                    if (peliculas != null && peliculas.containsKey(clave) && peliculas.get(clave).contains(idAsiento)) {
+                    if (peliculas.get(clave).contains(idAsiento)) {
                         return true;
                     }
                 }
