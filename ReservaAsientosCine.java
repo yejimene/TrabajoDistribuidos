@@ -86,7 +86,7 @@ public class ReservaAsientosCine {
     private void mostrarSala() {
         boolean idAceptada = reservaComunicacion.conectar("localhost", 55555, idUnico);
         if (!idAceptada) {
-            JOptionPane.showMessageDialog(principal, "No se puede iniciar sesión con la misma ID en dos lugares.");
+            JOptionPane.showMessageDialog(principal, "No se puede iniciar sesión con la misma ID en dos sesiones.");
             errorCerrar();
             return;
         }
