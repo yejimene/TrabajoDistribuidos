@@ -114,8 +114,10 @@ public class Procesar implements Runnable {
                 if (peliculas != null && peliculas.containsKey(clave)) {
                     Vector<String> asientosUsuario = peliculas.get(clave);
                    for(String linea: asientosUsuario){
-                       if(!peliculas2.contains(linea)){
-                         asientosUsuario.remove(linea);
+                       if(peliculas2!=null) {
+                           if (!peliculas2.contains(linea)) {
+                               asientosUsuario.remove(linea);
+                           }
                        }
                    }
 
@@ -155,7 +157,7 @@ public class Procesar implements Runnable {
     public boolean algunoContiene(String idAsiento) {
         synchronized (asientosUsuarios) {
             for (String usuario : asientosUsuarios.keySet()) {
-                if (usuario != idUsuario) {
+                if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
                     if (peliculas != null && peliculas.containsKey(clave) && peliculas.get(clave).contains(idAsiento)) {
                         return true;
@@ -169,22 +171,27 @@ public class Procesar implements Runnable {
     public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
         synchronized (Cine) {
             Vector<String> ocupados = Cine.getOrDefault(clave, new Vector<>());
+
             for (String asiento : ocupados) {
                 out.write(asiento + "\n");
             }
-        }
-        synchronized (asientosUsuarios) {
-            for (Map<String, Vector<String>> peliculas : asientosUsuarios.values()) {
-                if (peliculas.containsKey(clave)) {
-                    for (String asiento : peliculas.get(clave)) {
-                        out.write(asiento + "\n");
+
+            synchronized (asientosUsuarios) {
+                for (Map<String, Vector<String>> peliculas : asientosUsuarios.values()) {
+                    if (peliculas.containsKey(clave)) {
+                        for (String asiento : peliculas.get(clave)) {
+                            if (!ocupados.contains(asiento)) {
+                                out.write(asiento + "\n");
+                            }
+                        }
                     }
                 }
             }
+            out.write("FIN\n");
+            out.flush();
         }
-        out.write("FIN\n");
-        out.flush();
     }
+
 
     public void mostrarAsientosReservados() {
         for (String usuario : asientosUsuarios.keySet()) {

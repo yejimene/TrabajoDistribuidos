@@ -39,7 +39,7 @@ public class ReservaAsientosCine {
         String[] horas = {"14:00", "17:00", "20:00"};
         comboHoras = new JComboBox<>(horas);
         JLabel labelAsientos = new JLabel("Seleccione la cantidad de asientos:");
-        String[] cantidadAsientos = {"1", "2", "3","4","5", "10"};
+        String[] cantidadAsientos = {"1", "2", "3","4","5", "20"};
         comboAsientos = new JComboBox<>(cantidadAsientos);
         JButton btnConfirmarSeleccion = new JButton("Confirmar");
         btnConfirmarSeleccion.addActionListener(new ActionListener() {
@@ -167,7 +167,8 @@ public class ReservaAsientosCine {
         // Pedir los asientos ocupados después de cargar todos
         int n = reservaComunicacion.pedirAsientos(clave, asientos, asientoOcupado);
         if (Integer.parseInt(numAsientosReserva) > ((Filas * Columnas)) - n) {
-            JOptionPane.showMessageDialog(sala, "Superas el número de entradas disponibles");
+            JOptionPane.showMessageDialog(sala, "Superas el número de entradas disponibles queda: "+ (Filas*Columnas-n));
+            errorCerrar();
             return;
         }
 
