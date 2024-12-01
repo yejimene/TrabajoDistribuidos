@@ -83,6 +83,7 @@ public class Procesar implements Runnable {
     }
 
     public void seleccionarAsiento(String idAsiento) {
+        // comprueba si alguno ya tiene ese asiento seleccinado y si ya lo tiene no lo selecciona
         synchronized (asientosUsuarios) {
             asientosUsuarios.putIfAbsent(idUsuario, new ConcurrentHashMap<>());
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
@@ -94,6 +95,7 @@ public class Procesar implements Runnable {
     }
 
     public void deseleccionarAsiento(String idAsiento) {
+        //deselecciona el asiento
         synchronized (asientosUsuarios) {
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> asientosUsuario = peliculas.get(clave);
@@ -102,6 +104,7 @@ public class Procesar implements Runnable {
     }
 
     public void cancelarSeleccion() {
+        //quita los asientos que no tenga comprados.
         synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> peliculas2= Cine.get(clave);
@@ -125,17 +128,13 @@ public class Procesar implements Runnable {
 
 
     public boolean validarYComprar( ArrayList<String> asientosDeseados) {
+        // valida que los asientos que quiere comprar los tiene seleccinados(si selecciona alguno que ya esta seleccionado por otro no lo añade a su lista)  y los compra(los añade a cine).
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> asientosUsuario = peliculas.get(clave);
                 if (asientosUsuario.size() != asientosDeseados.size() || !asientosUsuario.containsAll(asientosDeseados)) {
                     return false;
-                }
-                for (String asiento : asientosDeseados) {
-                    if (algunoContiene(asiento)) {
-                        return false;
-                    }
                 }
                 Cine.putIfAbsent(clave, new Vector<>());
                 Cine.get(clave).addAll(asientosDeseados);
@@ -147,11 +146,12 @@ public class Procesar implements Runnable {
 
 
     public boolean algunoContiene(String idAsiento) {
+        //comprueba si alguno que sea el propio usuario tenga ese asiento.
         synchronized (asientosUsuarios) {
             for (String usuario : asientosUsuarios.keySet()) {
                 if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                    if ( peliculas.get(clave).contains(idAsiento)) {
+                    if (peliculas!=null&& peliculas.containsKey(clave)&& peliculas.get(clave).contains(idAsiento)) {
                         return true;
                     }
                 }
