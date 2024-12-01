@@ -253,12 +253,6 @@ public class ReservaAsientosCine {
     }
     private void errorCerrar(){
         principal.setVisible(true);
-        for (JButton boton : reservaLogica.getReservados()) {
-            if (boton.getIcon() == asientoSeleccionado) {
-                System.out.println(boton.getText());
-                reservaComunicacion.eliminarPrematuramente(boton, idUnico);
-            }
-        }
         reservaLogica.limpiarReservas();
         reservaComunicacion.cerrarConexion();
     }

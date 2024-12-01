@@ -6,8 +6,8 @@ import javax.swing.*;
 
 public class ReservaComunicacion {
     private Socket socket;
-    private BufferedReader in;
-    private BufferedWriter out;
+    private BufferedReader in=null;
+    private BufferedWriter out=null;
 
     public boolean conectar(String host, int puerto,String id) {
         try {
@@ -60,25 +60,51 @@ public class ReservaComunicacion {
         }
     }
     public void cerrarConexionAntes() {
-        try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (socket != null && !socket.isClosed()) socket.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (socket != null && !socket.isClosed()) {
+                    try {
+                        socket.shutdownOutput();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
-
-
         public void cerrarConexion() {
-        try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (socket != null) socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (socket != null) {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
         }
-    }
     public void enviarPrematuramente(JButton boton,String id){
         try {
             out.write(boton.getText()+"\n");

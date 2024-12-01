@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +11,8 @@ public class Procesar implements Runnable {
     private static ConcurrentHashMap<String, Map<String, Vector<String>>> asientosUsuarios = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Vector<String>> Cine = new ConcurrentHashMap<>();
     private static Vector<String> usuariosActivos = new Vector<>();
-
+    private BufferedReader in=null;
+    private BufferedWriter out=null;
     private String idUsuario;
     private String clave;
 
@@ -19,9 +21,6 @@ public class Procesar implements Runnable {
     }
 
     public void run() {
-        BufferedWriter out = null;
-        BufferedReader in = null;
-
         try {
             out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), "UTF-8"));
             in = new BufferedReader(new InputStreamReader(s.getInputStream(), "UTF-8"));
@@ -40,7 +39,7 @@ public class Procesar implements Runnable {
             }
 
             clave = in.readLine();
-            enviarAsientosOcupados(clave, out);
+            enviarAsientosOcupados();
 
 
             String id = in.readLine();
@@ -48,9 +47,9 @@ public class Procesar implements Runnable {
             while (id != null && !id.equals("Comprar")) {
                 if (id.equals("ELIMINAR")) {
                     id = in.readLine();
-                    deseleccionarAsiento(id, idUsuario);
+                    deseleccionarAsiento(id);
                 } else {
-                    seleccionarAsiento(id, idUsuario);
+                    seleccionarAsiento(id);
                 }
                 id = in.readLine();
             }
@@ -59,77 +58,76 @@ public class Procesar implements Runnable {
             while ((asiento = in.readLine()) != null && !asiento.equals("FIN")) {
                 asientosDeseados.add(asiento);
             }
-            if (id != null && validarYComprar(idUsuario, asientosDeseados)) {
+            if (id != null && validarYComprar( asientosDeseados)) {
                 System.out.println("si");
-                    out.write("true\n");
-                } else {
-                cancelarSeleccion(idUsuario);
-                    out.write("false\n");
-                }
-                out.flush();
+                out.write("true\n");
+            } else {
+                cancelarSeleccion();
+                out.write("false\n");
+            }
+            out.flush();
 
             mostrarAsientosReservados();
             synchronized (usuariosActivos) {
                 usuariosActivos.remove(idUsuario);
             }
-
         } catch (IOException e) {
-            cancelarSeleccion(idUsuario);
+            cancelarSeleccion();
             synchronized (usuariosActivos) {
                 usuariosActivos.remove(idUsuario);
             }
             e.printStackTrace();
         } finally {
-            cerrarTodo(out, in, s);
+            cerrarTodo();
         }
     }
 
-    public void seleccionarAsiento(String idAsiento, String usuario) {
+    public void seleccionarAsiento(String idAsiento) {
         synchronized (asientosUsuarios) {
-            asientosUsuarios.putIfAbsent(usuario, new ConcurrentHashMap<>());
-            Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+            asientosUsuarios.putIfAbsent(idUsuario, new ConcurrentHashMap<>());
+            Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
             peliculas.putIfAbsent(clave, new Vector<>());
-
             if (!algunoContiene(idAsiento)) {
                 peliculas.get(clave).add(idAsiento);
             }
         }
     }
 
-    public void deseleccionarAsiento(String idAsiento, String usuario) {
+    public void deseleccionarAsiento(String idAsiento) {
         synchronized (asientosUsuarios) {
-            Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-            if (peliculas != null && peliculas.containsKey(clave)) {
+            Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> asientosUsuario = peliculas.get(clave);
                 asientosUsuario.remove(idAsiento);
-            }
         }
     }
 
-    public void cancelarSeleccion(String usuario) {
+    public void cancelarSeleccion() {
         synchronized (asientosUsuarios) {
-            if(usuario!=null) {
-                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> peliculas2= Cine.get(clave);
-                if (peliculas != null && peliculas.containsKey(clave)) {
+                if(peliculas!=null) {
                     Vector<String> asientosUsuario = peliculas.get(clave);
-                   for(String linea: asientosUsuario){
-                           if (!peliculas2.contains(linea)) {
-                               asientosUsuario.remove(linea);
-                       }
-                   }
-
+                    if (peliculas2 != null && asientosUsuario != null) {
+                        Iterator<String> iterator = asientosUsuario.iterator();
+                        while (iterator.hasNext()) {
+                            String linea = iterator.next();
+                            if (!peliculas2.contains(linea)) {
+                                iterator.remove();
+                            }
+                        }
+                    } else if (peliculas2 == null) {
+                        asientosUsuario.removeAllElements();
+                    }
                 }
-            }
-
         }
+
     }
 
 
-    public boolean validarYComprar(String usuario, ArrayList<String> asientosDeseados) {
+    public boolean validarYComprar( ArrayList<String> asientosDeseados) {
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
-                Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+                Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> asientosUsuario = peliculas.get(clave);
                 if (asientosUsuario.size() != asientosDeseados.size() || !asientosUsuario.containsAll(asientosDeseados)) {
                     return false;
@@ -139,7 +137,7 @@ public class Procesar implements Runnable {
                         return false;
                     }
                 }
-                    Cine.putIfAbsent(clave, new Vector<>());
+                Cine.putIfAbsent(clave, new Vector<>());
                 Cine.get(clave).addAll(asientosDeseados);
 
                 return true;
@@ -153,7 +151,7 @@ public class Procesar implements Runnable {
             for (String usuario : asientosUsuarios.keySet()) {
                 if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-                    if (peliculas.get(clave).contains(idAsiento)) {
+                    if ( peliculas.get(clave).contains(idAsiento)) {
                         return true;
                     }
                 }
@@ -162,14 +160,14 @@ public class Procesar implements Runnable {
         }
     }
 
-    public void enviarAsientosOcupados(String clave, BufferedWriter out) throws IOException {
+    public void enviarAsientosOcupados() throws IOException {
+        //enviar asientos comprados
         synchronized (Cine) {
             Vector<String> ocupados = Cine.getOrDefault(clave, new Vector<>());
 
             for (String asiento : ocupados) {
                 out.write(asiento + "\n");
-            }
-
+            }// enviar asientos seleccionador pero no comprados
             synchronized (asientosUsuarios) {
                 for (Map<String, Vector<String>> peliculas : asientosUsuarios.values()) {
                     if (peliculas.containsKey(clave)) {
@@ -205,13 +203,28 @@ public class Procesar implements Runnable {
         }
     }
 
-    public void cerrarTodo(BufferedWriter out, BufferedReader in, Socket s) {
-        try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (s != null) s.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void cerrarTodo() {
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (s != null) {
+                    try {
+                        s.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
         }
     }
 }
