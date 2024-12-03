@@ -143,7 +143,6 @@ public class Procesar implements Runnable {
 
     public boolean algunoContiene(String idAsiento) {
         //comprueba si alguno que sea el propio usuario tenga ese asiento.
-        synchronized (asientosUsuarios) {
             for (String usuario : asientosUsuarios.keySet()) {
                 if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
@@ -154,7 +153,7 @@ public class Procesar implements Runnable {
             }
             return false;
         }
-    }
+
 
     public void enviarAsientosOcupados() throws IOException {
         //enviar asientos comprados
