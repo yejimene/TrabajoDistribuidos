@@ -68,14 +68,10 @@ public class Procesar implements Runnable {
             out.flush();
 
             mostrarAsientosReservados();
-            synchronized (usuariosActivos) {
                 usuariosActivos.remove(idUsuario);
-            }
         } catch (IOException e) {
             cancelarSeleccion();
-            synchronized (usuariosActivos) {
                 usuariosActivos.remove(idUsuario);
-            }
             e.printStackTrace();
         } finally {
             cerrarTodo();
@@ -128,12 +124,12 @@ public class Procesar implements Runnable {
 
 
     public boolean validarYComprar( ArrayList<String> asientosDeseados) {
-        // valida que los asientos que quiere comprar los tiene seleccinados(si selecciona alguno que ya esta seleccionado por otro no lo añade a su lista)  y los compra(los añade a cine).
+        // compra los asientos(añade a Cine)
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
-                Vector<String> asientosUsuario = peliculas.get(clave);
-                if (asientosUsuario.size() != asientosDeseados.size() || !asientosUsuario.containsAll(asientosDeseados)) {
+                Vector<String> asientosUsuario = peliculas.get(clave);// basta con mirar el size ya que no añade a la coleccion si esta ya seleccionado, no haria falta comprobar si tiene los asientos seleccionados ya
+                if (asientosUsuario.size() != asientosDeseados.size()) {
                     return false;
                 }
                 Cine.putIfAbsent(clave, new Vector<>());
@@ -152,7 +148,7 @@ public class Procesar implements Runnable {
                 if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
                     if (peliculas!=null&& peliculas.containsKey(clave)&& peliculas.get(clave).contains(idAsiento)) {
-                        return true;
+                        return true;// ha sido seleccionado por otro usuario
                     }
                 }
             }
