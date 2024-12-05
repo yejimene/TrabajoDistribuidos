@@ -10,6 +10,8 @@ public class CompraEntradas extends JFrame {
 
     private String idUnico;
 
+    //PRE:
+    //POS:Se crea y muestra una ventana con un formulario para ingresar el DNI y correo electrónico, además se configura un listener para manejar eventos del botón Confirmar.
     public CompraEntradas() {
         setTitle("Introducir Datos de Compra");
         setSize(400, 300);
@@ -58,10 +60,14 @@ public class CompraEntradas extends JFrame {
         setVisible(true);
     }
 
+    //PRE: El atributo idUnico debe haberse inicializado con un valor no nulo si el DNI fue ingresado correctamente.
+    //POS: Devuelve el valor actual de idUnico, corresponde al DNI introducido en el constructor.
     public String getIdUnico() {
         return idUnico;
     }
 
+    //PRE: dni != null
+    //POS: Devuelve true si el formato de dni equivale a 8 dígitos seguidos de una letra mayúscula, false en caso contrario.
     private boolean verificarDNI(String dni) {
         return dni.matches("\\d{8}[A-Z]");
     }
