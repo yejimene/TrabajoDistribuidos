@@ -9,6 +9,8 @@ public class ReservaComunicacion {
     private BufferedReader in=null;
     private BufferedWriter out=null;
 
+    //PRE: host no debe ser null ni vacío, puerto > 0 y id no debe ser null ni vacío
+    //POS: Establece una conexión con el servidor con el socket, envía el id y recibe una respuesta del servidor. Devuelve true si la conexión fue exitosa y el servidor respondió con un si, false en caso contrario.
     public boolean conectar(String host, int puerto,String id) {
         try {
             socket = new Socket(host, puerto);
@@ -25,6 +27,8 @@ public class ReservaComunicacion {
         }
     }
 
+    //PRE: clave no debe ser null ni vacío, asientos != null y iconoOcupado != null
+    //POS: Solicita los asientos ocupados al servidor, actualiza la interfaz gráfica con los asientos ocupados y devuelve el número de asientos ocupados
     public int pedirAsientos(String clave, JButton[][] asientos, ImageIcon iconoOcupado) {
         int numero = 0;
         try {
@@ -44,6 +48,8 @@ public class ReservaComunicacion {
         return numero;
     }
 
+    //PRE: reservados no debe ser null ni vacío.
+    //POS: Envía los asientos seleccionados al servidor, si la compra es exitosa devuelve true y false en caso contrario.
     public boolean comprarAsientos(ArrayList<JButton> reservados) {
         try {
             System.out.println("COmpramos");
@@ -59,6 +65,9 @@ public class ReservaComunicacion {
             return false;
         }
     }
+
+    //PRE: 
+    //POS: Cierra los flujos de entrada y salida y termina la conexión.
     public void cerrarConexionAntes() {
         if (out != null) {
             try {
@@ -82,29 +91,35 @@ public class ReservaComunicacion {
             }
         }
     }
-        public void cerrarConexion() {
-            if (out != null) {
+
+    //PRE: 
+    //POS: Cierra la conexión con el servidor, cerrando los flujos y el socket.
+    public void cerrarConexion() {
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (in != null) {
                 try {
-                    out.close();
+                    in.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if (in != null) {
+                if (socket != null) {
                     try {
-                        in.close();
+                        socket.close();
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }
-                    if (socket != null) {
-                        try {
-                            socket.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
                     }
                 }
             }
         }
+    }
+
+    //PRE: boton != null && id no debe ser null ni vacío.
+    //POS: Envía el texto del botón al servidor de manera prematura.
     public void enviarPrematuramente(JButton boton,String id){
         try {
             out.write(boton.getText()+"\n");
@@ -113,6 +128,9 @@ public class ReservaComunicacion {
             e.printStackTrace();
         }
     }
+
+    //PRE: boton no debe ser null y id no debe ser null ni vacío
+    //POS: Envía una solicitud al servidor para eliminar el asiento asociado al botón
     public void eliminarPrematuramente(JButton boton,String id){
         try {
             out.write("ELIMINAR\n");
