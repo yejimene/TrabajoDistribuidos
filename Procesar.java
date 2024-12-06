@@ -16,10 +16,15 @@ public class Procesar implements Runnable {
     private String idUsuario;
     private String clave;
 
+    //PRE: El Socket s debe estar conectado
+    //POS: Inicializa una instancia de la clase con el socket recibido.
     public Procesar(Socket s) {
         this.s = s;
     }
 
+
+    //PRE: 
+    //POS: Es procesada la comunicación con un cliente
     public void run() {
         try {
             out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), "UTF-8"));
@@ -78,8 +83,10 @@ public class Procesar implements Runnable {
         }
     }
 
+
+    //PRE: idAsiento no debe ser null ni estar vacío.
+    //POS: Añade el asiento idAsiento al conjunto de asientos seleccionados por el usuario actual, pero no realiza cambios si el asiento ya está seleccionado por otro usuario.
     public void seleccionarAsiento(String idAsiento) {
-        // comprueba si alguno ya tiene ese asiento seleccinado y si ya lo tiene no lo selecciona
         synchronized (asientosUsuarios) {
             asientosUsuarios.putIfAbsent(idUsuario, new ConcurrentHashMap<>());
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
@@ -90,6 +97,8 @@ public class Procesar implements Runnable {
         }
     }
 
+    //PRE: idAsiento debe existir en la lista de asientos seleccionados del usuario.
+    //POS: Deselecciona el asiento idAsiento de la lista del usuario actual en asientosUsuarios.
     public void deseleccionarAsiento(String idAsiento) {
         //deselecciona el asiento
         synchronized (asientosUsuarios) {
@@ -99,8 +108,9 @@ public class Procesar implements Runnable {
         }
     }
 
+    //PRE: El usuario actual debe tener asientos seleccionados pero no comprados.
+    //POS: Elimina los asientos seleccionados por el usuario actual que no hayan sido comprados.
     public void cancelarSeleccion() {
-        //quita los asientos que no tenga comprados.
         synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
                 Vector<String> peliculas2= Cine.get(clave);
@@ -122,9 +132,9 @@ public class Procesar implements Runnable {
 
     }
 
-
+    //PRE: asientosDeseados != null
+    //POS: Devuelve true y se marcan como comprados si la compra es válida, false en caso contrario
     public boolean validarYComprar( ArrayList<String> asientosDeseados) {
-        // compra los asientos(añade a Cine)
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
@@ -140,9 +150,9 @@ public class Procesar implements Runnable {
         }
     }
 
-
+    //PRE: idAsiento no debe ser null ni estar vacío
+    //POS: Devuelve true si otro usuario ya seleccionó el asiento idAsiento y false si el asiento está disponible. 
     public boolean algunoContiene(String idAsiento) {
-        //comprueba si alguno que sea el propio usuario tenga ese asiento.
             for (String usuario : asientosUsuarios.keySet()) {
                 if (!usuario.equals(idUsuario)) {
                     Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
@@ -154,9 +164,9 @@ public class Procesar implements Runnable {
             return false;
         }
 
-
+    //PRE: 
+    //POS: Envía la lista de asientos ocupados, comprados o seleccionados, al cliente. Termina con la palabra clave "FIN". 
     public void enviarAsientosOcupados() throws IOException {
-        //enviar asientos comprados
         synchronized (Cine) {
             Vector<String> ocupados = Cine.getOrDefault(clave, new Vector<>());
 
@@ -179,7 +189,8 @@ public class Procesar implements Runnable {
         }
     }
 
-
+    //PRE: 
+    //POS: Imprime en la consola los asientos reservados por cada usuario.
     public void mostrarAsientosReservados() {
         for (String usuario : asientosUsuarios.keySet()) {
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
@@ -198,6 +209,8 @@ public class Procesar implements Runnable {
         }
     }
 
+    //PRE: 
+    //POS: Cierra los flujos de entrada y salida y libera el socket.
     public void cerrarTodo() {
         if (out != null) {
             try {
