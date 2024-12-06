@@ -24,6 +24,8 @@ public class ReservaAsientosCine {
     private ReservaLogica reservaLogica = new ReservaLogica();
     private ReservaComunicacion reservaComunicacion = new ReservaComunicacion();
 
+    //PRE:
+    //POS: Se inicializa y muestra una ventana para seleccionar película, hora y cantidad de asientos.
     public ReservaAsientosCine() {
         principal.setTitle("Reserva Asientos Cine ");
         principal.setSize(400, 200);
@@ -83,6 +85,8 @@ public class ReservaAsientosCine {
         principal.setVisible(true);
     }
 
+    //PRE:
+    //POS: Crea y muestra una nuevo Frame para seleccionar asientos.
     private void mostrarSala() {
         boolean idAceptada = reservaComunicacion.conectar("localhost", 55555, idUnico);
         if (!idAceptada) {
@@ -236,21 +240,29 @@ public class ReservaAsientosCine {
         principal.setVisible(false);
     }
 
-
+    //PRE:
+    //POS: Se crea una instancia de la clase ReservaAsientosCine, inicializando así la interfaz gráfica.
     public static void main(String[] args) {
         ReservaAsientosCine r= new ReservaAsientosCine();
     }
 
+    //PRE: icono != null && ancho > 0 && alto > 0
+    //POS: Devuelve un ImageIcon con las dimensiones especificadas de ancho y alto.
     private ImageIcon redimensionarIcono(ImageIcon icono, int ancho, int alto) {
         Image imagen = icono.getImage();
         Image imagenRedimensionada = imagen.getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
         return new ImageIcon(imagenRedimensionada);
     }
 
+    //PRE:
+    //POS: Todos los asientos seleccionados son desmarcados y la conexión con el servidor está cerrada.
     private void liberarRecursos() {
         reservaLogica.limpiarReservas();
         reservaComunicacion.cerrarConexionAntes();
     }
+
+    //PRE:
+    //POS: La ventana principal se vuelve visible, todas las reservas pendientes se eliminan en reservaLogica y cualquier conexión activa en reservaComunicacion se cierra.
     private void errorCerrar(){
         principal.setVisible(true);
         reservaLogica.limpiarReservas();
