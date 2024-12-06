@@ -119,7 +119,7 @@ public class ReservaComunicacion {
     }
 
     //PRE: boton != null && id no debe ser null ni vacío.
-    //POS: Envía el texto del botón al servidor de manera prematura.
+    //POS: Envía el texto del botón preseleccionandolo para que nadie más lo pueda seleccionar.
     public void enviarPrematuramente(JButton boton,String id){
         try {
             out.write(boton.getText()+"\n");
