@@ -191,7 +191,7 @@ public class Procesar implements Runnable {
 
     //PRE: 
     //POS: Imprime en la consola los asientos reservados por cada usuario.
-    public void mostrarAsientosReservados() {
+    public void mostrarAsientosReservados() { // Es un metodo para debuggear se puede prescindir de el.No afecta en nada a la aplicacion
         for (String usuario : asientosUsuarios.keySet()) {
             Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
             if (peliculas != null && !peliculas.isEmpty()) {
