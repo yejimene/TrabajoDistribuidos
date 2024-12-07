@@ -2,9 +2,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Scanner;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 public class ReservaAsientosCine {
     private JFrame principal = new JFrame();
@@ -110,7 +107,7 @@ public class ReservaAsientosCine {
                 for (JButton boton : reservaLogica.getReservados()) {
                     if (boton.getIcon() == asientoSeleccionado) {
                         System.out.println(boton.getText());
-                        reservaComunicacion.eliminarPrematuramente(boton, idUnico);
+                        reservaComunicacion.eliminarPrematuramente(boton);
                     }
                 }
                 liberarRecursos();
@@ -145,11 +142,11 @@ public class ReservaAsientosCine {
                         if (boton.getIcon() == asientoDisponible && (reservaLogica.getReservados().size() < Integer.parseInt(numAsientosReserva)) && reservaLogica.puedeComprarAsientos()) {
                             boton.setIcon(asientoSeleccionado);
                             reservaLogica.agregarAsiento(boton);
-                            reservaComunicacion.enviarPrematuramente((JButton)e.getSource(), idUnico);
+                            reservaComunicacion.enviarPrematuramente((JButton)e.getSource());
                         } else if (boton.getIcon() == asientoSeleccionado) {
                             boton.setIcon(asientoDisponible);
                             reservaLogica.quitarAsiento(boton);
-                            reservaComunicacion.eliminarPrematuramente((JButton)e.getSource(), idUnico);
+                            reservaComunicacion.eliminarPrematuramente((JButton)e.getSource());
                         }
                         // Habilitar el botón si hay asientos seleccionados
                         reservaLogica.habilitarCompra(btnConfirmarAsientos, Integer.parseInt(numAsientosReserva));
@@ -186,7 +183,7 @@ public class ReservaAsientosCine {
                 for (JButton boton : reservaLogica.getReservados()) {
                     if (boton.getIcon() == asientoSeleccionado) {
                         System.out.println(boton.getText());
-                        reservaComunicacion.eliminarPrematuramente(boton, idUnico);
+                        reservaComunicacion.eliminarPrematuramente(boton);
                     }
                 }
                 liberarRecursos();

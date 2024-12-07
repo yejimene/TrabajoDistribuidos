@@ -118,9 +118,9 @@ public class ReservaComunicacion {
         }
     }
 
-    //PRE: boton != null && id no debe ser null ni vacío.
+    //PRE: boton != null
     //POS: Envía el texto del botón preseleccionandolo para que nadie más lo pueda seleccionar.
-    public void enviarPrematuramente(JButton boton,String id){
+    public void enviarPrematuramente(JButton boton){
         try {
             out.write(boton.getText()+"\n");
             out.flush();
@@ -129,9 +129,9 @@ public class ReservaComunicacion {
         }
     }
 
-    //PRE: boton no debe ser null y id no debe ser null ni vacío
+    //PRE: boton no debe ser null
     //POS: Envía una solicitud al servidor para eliminar el asiento asociado al botón
-    public void eliminarPrematuramente(JButton boton,String id){
+    public void eliminarPrematuramente(JButton boton){
         try {
             out.write("ELIMINAR\n");
             out.write(boton.getText() + "\n");
