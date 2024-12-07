@@ -73,13 +73,12 @@ public class Procesar implements Runnable {
             out.flush();
 
             mostrarAsientosReservados();
-                usuariosActivos.remove(idUsuario);
         } catch (IOException e) {
             cancelarSeleccion();
-                usuariosActivos.remove(idUsuario);
             e.printStackTrace();
         } finally {
             cerrarTodo();
+            usuariosActivos.remove(idUsuario);
         }
     }
 
@@ -138,8 +137,8 @@ public class Procesar implements Runnable {
         synchronized (Cine) {
             synchronized (asientosUsuarios) {
                 Map<String, Vector<String>> peliculas = asientosUsuarios.get(idUsuario);
-                Vector<String> asientosUsuario = peliculas.get(clave);// basta con mirar el size ya que no añade a la coleccion si esta ya seleccionado, no haria falta comprobar si tiene los asientos seleccionados ya
-                if (asientosUsuario.size() != asientosDeseados.size()) {
+                Vector<String> asientosUsuario = peliculas.get(clave);
+                if (!asientosUsuario.containsAll(asientosDeseados)) {
                     return false;
                 }
                 Cine.putIfAbsent(clave, new Vector<>());
