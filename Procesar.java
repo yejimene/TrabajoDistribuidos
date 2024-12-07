@@ -123,7 +123,7 @@ public class Procesar implements Runnable {
                                 iterator.remove();
                             }
                         }
-                    } else if (peliculas2 == null) {
+                    } else if (peliculas2 == null && asientosUsuario!=null) {
                         asientosUsuario.removeAllElements();
                     }
                 }
