@@ -71,7 +71,7 @@ public class Procesar implements Runnable {
             }
             out.flush();
 
-            mostrarAsientosReservados();
+            //mostrarAsientosReservados();
         } catch (IOException e) {
             cancelarSeleccion();
             e.printStackTrace();
