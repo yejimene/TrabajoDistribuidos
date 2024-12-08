@@ -19,7 +19,6 @@ public class ReservaComunicacion {
             out.write(id+"\n");
             out.flush();
             String linea=in.readLine();
-            System.out.println(linea);
             return linea.equals("si");
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,7 +51,6 @@ public class ReservaComunicacion {
     //POS: Envía los asientos seleccionados al servidor, si la compra es exitosa devuelve true y false en caso contrario.
     public boolean comprarAsientos(ArrayList<JButton> reservados) {
         try {
-            System.out.println("COmpramos");
             out.write("Comprar\n");
             for(JButton s: reservados){
                 out.write(s.getText()+"\n");

@@ -64,7 +64,6 @@ public class Procesar implements Runnable {
                 asientosDeseados.add(asiento);
             }
             if (id != null && validarYComprar( asientosDeseados)) {
-                System.out.println("si");
                 out.write("true\n");
             } else {
                 cancelarSeleccion();
