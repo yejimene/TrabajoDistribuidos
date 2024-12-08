@@ -189,23 +189,22 @@ public class Procesar implements Runnable {
 
     //PRE: 
     //POS: Imprime en la consola los asientos reservados por cada usuario.
-    public void mostrarAsientosReservados() { // Es un metodo para debuggear se puede prescindir de el.No afecta en nada a la aplicacion
-        for (String usuario : asientosUsuarios.keySet()) {
-            Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
-            if (peliculas != null && !peliculas.isEmpty()) {
-                for (String clave : peliculas.keySet()) {
-                    Vector<String> asientos = peliculas.get(clave);
-                    System.out.print("Usuario " + usuario + " ha reservado los asientos para la película y hora " + clave + ": ");
-                    if (asientos != null && !asientos.isEmpty()) {
-                        for (String asiento : asientos) {
-                            System.out.print(asiento + " ");
-                        }
-                    }
-                    System.out.println();
-                }
-            }
-        }
-    }
+    //   public void mostrarAsientosReservados() { // Es un metodo para debuggear se puede prescindir de el.No afecta en nada a la aplicacion
+    //       for (String usuario : asientosUsuarios.keySet()) {
+    //           Map<String, Vector<String>> peliculas = asientosUsuarios.get(usuario);
+    //          if (peliculas != null && !peliculas.isEmpty()) {
+    //              for (String clave : peliculas.keySet()) {
+    //                  Vector<String> asientos = peliculas.get(clave);
+    //                  System.out.println("Usuario " + usuario + " ha reservado los asientos para la película y hora " + clave + ": ");
+    //                  if (asientos != null && !asientos.isEmpty()) {
+    //                     for (String asiento : asientos) {
+    //                        System.out.println(asiento + " ");
+    //                    }
+    //               }
+    //           }
+    //        }
+    //    }
+    // }
 
     //PRE: 
     //POS: Cierra los flujos de entrada y salida y libera el socket.
