@@ -170,7 +170,7 @@ public class Procesar implements Runnable {
 
             for (String asiento : ocupados) {
                 out.write(asiento + "\n");
-            }// enviar asientos seleccionador pero no comprados
+            }// enviar asientos seleccionados pero no comprados
             synchronized (asientosUsuarios) {
                 for (Map<String, Vector<String>> peliculas : asientosUsuarios.values()) {
                     if (peliculas.containsKey(clave)) {
